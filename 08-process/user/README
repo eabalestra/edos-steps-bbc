@@ -1,0 +1,8 @@
+# User space programs
+
+Here we have userspace programs, data files and utilities.
+
+User programs are linked with `edoslib.c` (edos standard library) and `usys.s`
+(syscalls).
+
+User programs use logical address space 
