@@ -19,6 +19,8 @@
 #define PROC_MIN_VA   (0)
 #define PROC_MAX_VA   (0x80000000)
 
+#define NSEM_PROC 8 // Maximum number of semaphores per process
+
 // task/process control block
 struct task {
     uint              tid;                 // Task id
@@ -36,6 +38,8 @@ struct task {
     void*             wait_condition;      // Waiting condition
     pte*              pgtbl;               // Page table
     spinlock          lock;                // lock for task
+    int currentSemaphores[NSEM_PROC];   // List of semaphore IDs used by this task
+    int               sem_count;           // current number of semaphores used
 };
 
 // CPU state

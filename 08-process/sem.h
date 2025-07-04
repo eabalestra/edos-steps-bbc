@@ -3,26 +3,14 @@
 #include "spinlock.h"
 
 #define NSEM 16     // Maximum number of semaphores in system
-#define NSEM_PROC 8 // Maximum number of semaphores per process
-
-// Forward declaration
-struct task;
 
 // Semaphore structure
 struct semaphore
 {
-    int id;                        // Semaphore ID
-    int value;                     // Current semaphore value
-    int used;                      // Is this semaphore slot in use?
-    spinlock lock;                 // Lock for atomic operations
-    struct wait_queue *wait_queue; // Wait queue for blocked processes
-};
-
-struct wait_queue
-{
-    struct task *task;
-    struct wait_queue *next;
-    spinlock lock;
+    int id;        // Semaphore ID
+    int value;     // Current semaphore value
+    int used;      // Is this semaphore slot in use?
+    spinlock lock; // Lock for atomic operations
 };
 
 // Global semaphore table

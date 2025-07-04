@@ -53,6 +53,21 @@ int sys_sleep(struct task *task)
     return 0;
 }
 
+// struct semaphore *semcreate(int id, int init_value)
+int sys_semcreate(struct task *task)
+{
+    struct trap_frame *tf = task_trap_frame_address(task);
+    
+    int id = (int) syscall_arg(tf, 0);
+    int init_value = (int) syscall_arg(tf, 1);
+
+    if (init_value < 0) {
+        return -1; // Invalid initial value
+    }
+
+    
+}
+
 //=============================================================================
 // syscall dispatcher
 //=============================================================================
