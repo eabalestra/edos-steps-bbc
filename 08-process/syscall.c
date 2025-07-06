@@ -58,6 +58,7 @@ int sys_semcreate(struct task *task)
 {
     struct trap_frame *tf = task_trap_frame_address(task);
     
+    // TODO: chequear si esto esta completamente bien?
     int id = (int) syscall_arg(tf, 0);
     int init_value = (int) syscall_arg(tf, 1);
 
@@ -65,7 +66,9 @@ int sys_semcreate(struct task *task)
         return -1; // Invalid initial value
     }
 
-    
+    // int result = alloc_semaphore(id, init_value);
+    semcreate(id, init_value);
+
 }
 
 //=============================================================================

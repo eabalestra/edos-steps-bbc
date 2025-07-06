@@ -59,6 +59,7 @@ struct semaphore *semcreate(int id, int init_value)
             sem->id = id;
             sem->value = init_value;
             sem->used = 1;
+            sem->ref_count = 0;
             sem->lock = (spinlock){0};
             release(&sem_table_lock);
             return sem; // Success

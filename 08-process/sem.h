@@ -9,6 +9,7 @@ struct semaphore
 {
     int id;        // Semaphore ID
     int value;     // Current semaphore value
+    int ref_count; // Number of processes using this semaphore
     int used;      // Is this semaphore slot in use?
     spinlock lock; // Lock for atomic operations
 };
