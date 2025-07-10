@@ -115,6 +115,21 @@ int sys_semwait(struct task *task)
     return sem_wait(id);
 }
 
+// int sem_signal(int id)
+int sys_semsignal(struct task *task)
+{
+    struct trap_frame *tf = task_trap_frame_address(task);
+    int id = (int)syscall_arg(tf, 0); // Get semaphore ID
+
+    // Check if process has access to this semaphore
+    if (!proc_has_semaphore(task, id))
+    {
+        return -1;
+    }
+
+    return sem_signal(id);
+}
+
 //=============================================================================
 // syscall dispatcher
 //=============================================================================
