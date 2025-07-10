@@ -79,8 +79,25 @@ int sys_semcreate(struct task *task)
             return -1;
         }
     }
-
     return result;
+}
+
+// TODO: ask if this is correct, because we don't know how this works
+int sys_semget(struct task *task)
+{
+    struct trap_frame *tf = task_trap_frame_address(task);
+    int id = (int)syscall_arg(tf, 0);
+
+    acquire(&sem_table_lock);
+    struct semaphore *sem = semget(id);
+
+    if (sem)
+    {
+        return 0; // Semaphore found
+    }
+
+    release(&sem_table_lock);
+    return -1; // Semaphore not found
 }
 
 //=============================================================================
