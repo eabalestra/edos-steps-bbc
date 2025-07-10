@@ -14,6 +14,7 @@ void init_semaphores(void)
     {
         semaphores[i].id = -1;
         semaphores[i].value = 0;
+        semaphores[i].ref_count = 0;
         semaphores[i].used = 0;
         semaphores[i].lock = (spinlock){0};
     }
@@ -37,7 +38,7 @@ struct semaphore *semget(int id)
 }
 
 // Allocate a new semaphore
-struct semaphore *semcreate(int id, int init_value)
+int *semcreate(int id, int init_value)
 {
     acquire(&sem_table_lock);
 
@@ -62,14 +63,31 @@ struct semaphore *semcreate(int id, int init_value)
             sem->ref_count = 0;
             sem->lock = (spinlock){0};
             release(&sem_table_lock);
-            return sem; // Success
+            return 0; // Success
         }
     }
     release(&sem_table_lock);
-    return sem; // No free slots
+    return -1; // No free slots
 }
 
-// If the semaphore's value is zero, the process is supsended. Ohterwise, the value of the semaphore is decreased.
+// Add process semaphore reference
+int add_proc_semaphore(struct task *task, int sem_id)
+{
+    // Find free slot in process semaphore table
+    for (int i = 0; i < NSEM_PROC; i++)
+    {
+        if (!task->current_sems[i].used)
+        {
+            task->current_sems[i].sem_id = sem_id;
+            task->current_sems[i].used = true;
+            return 0;
+        }
+    }
+    return -1; // No free slots
+}
+
+// If the semaphore's value is zero, the process is supsended.
+// Ohterwise, the value of the semaphore is decreased.
 int sem_wait(int id)
 {
     struct semaphore *sem = semget(id);
@@ -81,9 +99,10 @@ int sem_wait(int id)
         suspend(&sem->id, &sem->lock);
     }
 
+    // TODO: posible bug (Chino)
     sem->value--;
     struct task *task = current_task();
-    task->currentSemaphores[task->sem_count] = &sem->id;
+    // task->current_sems[task->sem_count] = &sem->id;
     task->sem_count++;
 
     release(&sem->lock);

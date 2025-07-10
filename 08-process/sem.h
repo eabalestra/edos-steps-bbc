@@ -2,7 +2,7 @@
 #include "types.h"
 #include "spinlock.h"
 
-#define NSEM 16     // Maximum number of semaphores in system
+#define NSEM 16 // Maximum number of semaphores in system
 
 // Semaphore structure
 struct semaphore
@@ -10,8 +10,14 @@ struct semaphore
     int id;        // Semaphore ID
     int value;     // Current semaphore value
     int ref_count; // Number of processes using this semaphore
-    int used;      // Is this semaphore slot in use?
+    bool used;     // Is this semaphore slot in use?
     spinlock lock; // Lock for atomic operations
+};
+
+struct proc_sem
+{
+    int sem_id; // Semaphore ID
+    int used;   // Is this slot used?
 };
 
 // Global semaphore table
@@ -22,7 +28,7 @@ extern spinlock sem_table_lock;
 void init_semaphores(void);
 
 // Semaphore management functions
-struct semaphore *semcreate(int id, int init_value);
+int *semcreate(int id, int init_value);
 struct semaphore *semget(int id);
 int sem_wait(int id);
 int sem_signal(int id);
