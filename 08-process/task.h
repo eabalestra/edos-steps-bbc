@@ -1,4 +1,5 @@
 #pragma once
+#include "sem.h"
 #include "arch.h"
 #include "spinlock.h"
 
@@ -21,6 +22,7 @@
 
 #define NSEM_PROC 8 // Maximum number of semaphores per process
 
+
 // task/process control block
 struct task {
     uint              tid;                 // Task id
@@ -38,8 +40,8 @@ struct task {
     void*             wait_condition;      // Waiting condition
     pte*              pgtbl;               // Page table
     spinlock          lock;                // lock for task
-    int currentSemaphores[NSEM_PROC];   // List of semaphore IDs used by this task
-    int               sem_count;           // current number of semaphores used
+    struct proc_sem   current_sems[NSEM_PROC];  // Current semaphores used by this process
+    int               sem_count;                // current number of semaphores used 
 };
 
 // CPU state

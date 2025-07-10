@@ -68,6 +68,7 @@ struct task* create_task(char* name, task_function f) {
             task->killed = false;
             task->pgtbl  = kernel_pgtbl;
             task->wait_condition = 0;
+            // TODO : task->sem_count = 0; // Initialize semaphore count
             if (strlen(name) > TASK_NAME_LEN)
                 name[TASK_NAME_LEN - 1] = '\0';
             strcpy(task->name, name);
