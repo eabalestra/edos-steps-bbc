@@ -8,7 +8,7 @@ int sys_exit(struct task *task)
 {
     struct trap_frame *tf = task_trap_frame_address(task);
     task->killed = true;
-    task->exit_code = (int) syscall_arg(tf, 0);
+    task->exit_code = (int)syscall_arg(tf, 0);
     return 0;
 }
 
@@ -23,7 +23,7 @@ int sys_console_puts(struct task *task)
 {
     struct trap_frame *tf = task_trap_frame_address(task);
     size_t str = syscall_arg(tf, 0);
-    char *kaddr = (char *) va2kernel_address(task->pgtbl, str);
+    char *kaddr = (char *)va2kernel_address(task->pgtbl, str);
     printf("%s", kaddr);
     return 0;
 }
@@ -57,18 +57,30 @@ int sys_sleep(struct task *task)
 int sys_semcreate(struct task *task)
 {
     struct trap_frame *tf = task_trap_frame_address(task);
-    
-    // TODO: chequear si esto esta completamente bien?
-    int id = (int) syscall_arg(tf, 0);
-    int init_value = (int) syscall_arg(tf, 1);
 
-    if (init_value < 0) {
+    // TODO: chequear si esto esta completamente bien?
+    int id = (int)syscall_arg(tf, 0);
+    int init_value = (int)syscall_arg(tf, 1);
+
+    if (init_value < 0)
+    {
         return -1; // Invalid initial value
     }
 
-    // int result = alloc_semaphore(id, init_value);
-    semcreate(id, init_value);
+    // Create the semaphore
+    int result = semcreate(id, init_value);
 
+    if (result == 0)
+    {
+        // Add to process semaphore table
+        if (add_proc_semaphore(task, id) != 0)
+        {
+            // free_semaphore(id);
+            return -1;
+        }
+    }
+
+    return result;
 }
 
 //=============================================================================
@@ -84,8 +96,7 @@ static syscall_f syscalls_table[SYSCALLS] = {
     sys_console_puts,
     sys_console_putc,
     sys_console_getc,
-    sys_sleep
-};
+    sys_sleep};
 
 // Syscall dispatcher. Call the syscall and store result in trap frame
 void syscall(struct task *task)
@@ -93,10 +104,13 @@ void syscall(struct task *task)
     struct trap_frame *tf = task_trap_frame_address(task);
     uint n = syscall_number(tf);
     // printf("syscall %d from pid %d\n", n, task->pid);
-    if (n < SYSCALLS && syscalls_table[n]) {
+    if (n < SYSCALLS && syscalls_table[n])
+    {
         int result = syscalls_table[n](task);
         syscall_put_result(tf, result);
-    } else {
+    }
+    else
+    {
         syscall_put_result(tf, -1);
     }
 }
