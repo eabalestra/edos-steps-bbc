@@ -101,13 +101,27 @@ int sem_wait(int id)
 
     // TODO: posible bug (Chino)
     sem->value--;
-    struct task *task = current_task();
+
+    // struct task *task = current_task();
     // task->current_sems[task->sem_count] = &sem->id;
-    task->sem_count++;
+    // task->sem_count++;
 
     release(&sem->lock);
 
     return 0;
+}
+
+// Check if process has access to semaphore
+bool proc_has_semaphore(struct task *task, int sem_id)
+{
+    for (int i = 0; i < NSEM_PROC; i++)
+    {
+        if (task->current_sems[i].used && task->current_sems[i].sem_id == sem_id)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 // Increments the value of the semaphore and wakes up the sleeping processes.
@@ -121,8 +135,8 @@ int sem_signal(int id)
 
     wakeup(&sem->id);
 
-    struct task *task = current_task();
-    task->sem_count--;
+    // struct task *task = current_task();
+    // task->sem_count--;
 
     release(&sem->lock);
 

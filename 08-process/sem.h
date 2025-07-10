@@ -27,9 +27,12 @@ extern spinlock sem_table_lock;
 // Initialize semaphore system
 void init_semaphores(void);
 
-// Semaphore management functions
+// 
 int *semcreate(int id, int init_value);
 struct semaphore *semget(int id);
 int sem_wait(int id);
 int sem_signal(int id);
 int sem_close(int id);
+
+// Semaphore management functions
+bool proc_has_semaphore(struct task *task, int sem_id);
