@@ -20,6 +20,19 @@ void init_semaphores(void)
     }
 }
 
+// Check if process has access to semaphore
+bool proc_has_semaphore(struct task *task, int sem_id)
+{
+    for (int i = 0; i < NSEM_PROC; i++)
+    {
+        if (task->current_sems[i].used && task->current_sems[i].sem_id == sem_id)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 // Find semaphore by ID
 struct semaphore *semget(int id)
 {
@@ -36,6 +49,40 @@ struct semaphore *semget(int id)
     release(&sem_table_lock);
     return NULL;
 }
+
+// Add process semaphore reference
+int add_proc_semaphore(struct task *task, int sem_id)
+{
+    // Find free slot in process semaphore table
+    for (int i = 0; i < NSEM_PROC; i++)
+    {
+        if (!task->current_sems[i].used)
+        {
+            task->current_sems[i].sem_id = sem_id;
+            task->current_sems[i].used = true;
+            return 0;
+        }
+    }
+    return -1; // No free slots
+}
+
+// Remove process semaphore reference
+void remove_proc_semaphore(struct task *task, int sem_id)
+{
+    for (int i = 0; i < NSEM_PROC; i++)
+    {
+        if (task->current_sems[i].used && task->current_sems[i].sem_id == sem_id)
+        {
+            task->current_sems[i].used = false;
+            task->current_sems[i].sem_id = -1;
+            return;
+        }
+    }
+}
+
+//=============================================================================
+// Functions for syscalls implementation
+//=============================================================================
 
 // Allocate a new semaphore
 int *semcreate(int id, int init_value)
@@ -70,22 +117,6 @@ int *semcreate(int id, int init_value)
     return -1; // No free slots
 }
 
-// Add process semaphore reference
-int add_proc_semaphore(struct task *task, int sem_id)
-{
-    // Find free slot in process semaphore table
-    for (int i = 0; i < NSEM_PROC; i++)
-    {
-        if (!task->current_sems[i].used)
-        {
-            task->current_sems[i].sem_id = sem_id;
-            task->current_sems[i].used = true;
-            return 0;
-        }
-    }
-    return -1; // No free slots
-}
-
 // If the semaphore's value is zero, the process is supsended.
 // Ohterwise, the value of the semaphore is decreased.
 int sem_wait(int id)
@@ -111,19 +142,6 @@ int sem_wait(int id)
     return 0;
 }
 
-// Check if process has access to semaphore
-bool proc_has_semaphore(struct task *task, int sem_id)
-{
-    for (int i = 0; i < NSEM_PROC; i++)
-    {
-        if (task->current_sems[i].used && task->current_sems[i].sem_id == sem_id)
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
 // Increments the value of the semaphore and wakes up the sleeping processes.
 int sem_signal(int id)
 {
@@ -141,20 +159,6 @@ int sem_signal(int id)
     release(&sem->lock);
 
     return 0;
-}
-
-// Remove process semaphore reference
-void remove_proc_semaphore(struct task *task, int sem_id)
-{
-    for (int i = 0; i < NSEM_PROC; i++)
-    {
-        if (task->current_sems[i].used && task->current_sems[i].sem_id == sem_id)
-        {
-            task->current_sems[i].used = false;
-            task->current_sems[i].sem_id = -1;
-            return;
-        }
-    }
 }
 
 // Free a semaphore

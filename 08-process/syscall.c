@@ -146,7 +146,7 @@ int sys_semclose(struct task *task)
     remove_proc_semaphore(task, id);
 
     // Decrease reference count
-    free_semaphore(id);
+    sem_close(id);
 
     return 0;
 }
