@@ -37,7 +37,7 @@ Contributions and comments are welcome.
 
 1. A cross-compiler running in the host platform for RISC-V. We use the GNU
    build chain. With a few changes in `Makefile` build files it should compiled
-   and linked with *Clang/LLVM*.
+   and linked with _Clang/LLVM_.
 2. [QEMU](https://www.qemu.org/) for running the OS in a RISC-V emulated
    machine.
 
@@ -51,17 +51,17 @@ sudo apt-get install git build-essential gdb-multiarch qemu-system-misc gcc-risc
 
 ### Arch Linux:
 
- ```
- $ sudo pacman -S riscv64-linux-gnu-binutils riscv64-linux-gnu-gcc riscv64-linux-gnu-gdb qemu-emulators-full
- ```
+```
+$ sudo pacman -S riscv64-linux-gnu-binutils riscv64-linux-gnu-gcc riscv64-linux-gnu-gdb qemu-emulators-full
+```
 
- ### MacOS
+### MacOS
 
- ```
- $ xcode-select --install
- ```
+```
+$ xcode-select --install
+```
 
- Then install RISCV compiler toolchain with [Homebrew](https://brew.sh/)
+Then install RISCV compiler toolchain with [Homebrew](https://brew.sh/)
 
 ```
 $ brew tap riscv/riscv
@@ -88,15 +88,20 @@ following the above instructions.
 
 ## Resources
 
-1. *RISCV programming book*: Prof. Edson Borin. 
+1. _RISCV programming book_: Prof. Edson Borin.
    https://riscv-programming.org/book/riscv-book.html
-2. *XV6,  a simple Unix-like teaching operating system*. 
+2. _XV6, a simple Unix-like teaching operating system_.
    https://pdos.csail.mit.edu/6.1810/2024/xv6.html
 3. Daniel Magnum RISC-V blog: https://danielmangum.com/categories/risc-v-bytes/
-4. *Writing an Operating System in 1000 lines*. 
+4. _Writing an Operating System in 1000 lines_.
    https://github.com/nuta/operating-system-in-1000-lines
-5. *Operating Systems UNRC Course Notes (in Spanish)*. Marcelo Arroyo.
+5. _Operating Systems UNRC Course Notes (in Spanish)_. Marcelo Arroyo.
    https://marceloarroyo.gitlab.io/cursos/SO/index.html
-6. *Mini RISCV OS*: https://github.com/cccriscv/mini-riscv-os
+6. _Mini RISCV OS_: https://github.com/cccriscv/mini-riscv-os
 
-# edos-steps-bbc
+## Authors
+
+- **Arroyo Marcelo** - Professor. ([@marceloarroyo](https://marceloarroyo.gitlab.io))
+- **Balestra Edgar Agustin** ([@eabalestra](https://github.com/eabalestra))
+- **Buil Delfina** ([@delfib](https://github.com/delfib))
+- **Compagnucci Bruno José Ignacio** ([@JoseCompag](https://github.com/JoseCompag))
