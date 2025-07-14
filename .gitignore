@@ -1,2 +1,6 @@
 # IDE's files
 .vscode/
+
+# Compiled object files
+*.d
+*.o
