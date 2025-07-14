@@ -2,5 +2,11 @@
 .vscode/
 
 # Compiled object files
-*.d
-*.o
+*.o 
+*.bin 
+*.d 
+*.asm
+
+#
+init
+idle
