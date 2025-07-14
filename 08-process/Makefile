@@ -3,9 +3,9 @@ QEMU=qemu-system-riscv32
 # cross compiler prefix
 
 # GNU-Linux
-# PREFIX = riscv64-linux-gnu-
+PREFIX = riscv64-linux-gnu-
 # for macos
-PREFIX = riscv64-unknown-elf-
+# PREFIX = riscv64-unknown-elf-
 
 CC = $(PREFIX)gcc
 OBJDUMP = $(PREFIX)objdump
