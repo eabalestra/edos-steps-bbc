@@ -12,7 +12,7 @@ OBJDUMP = $(PREFIX)objdump
 
 # Compiler flags for compiling to riscv32 architecture standalone program (no
 # runtime and standard library)
-CFLAGS = -O -Wall -Wextra -MD -mcmodel=medany -march=rv32ima -mabi=ilp32 \
+CFLAGS = -O -Wall -Wextra -MD -mcmodel=medany -march=rv32imazicsr -mabi=ilp32 \
          -ffreestanding -nostdlib -fno-common -fno-omit-frame-pointer \
 		 -fno-stack-protector -fno-pie -no-pie -nostartfiles -fmax-errors=1
 

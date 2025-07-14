@@ -130,6 +130,27 @@ int sys_semsignal(struct task *task)
     return sem_signal(id);
 }
 
+// sem_close(int id)
+int sys_semclose(struct task *task)
+{
+    struct trap_frame *tf = task_trap_frame_address(task);
+    int id = (int)syscall_arg(tf, 0);
+
+    // Check if process has access to this semaphore
+    if (!proc_has_semaphore(task, id))
+    {
+        return -1;
+    }
+
+    // Remove from process table
+    remove_proc_semaphore(task, id);
+
+    // Decrease reference count
+    free_semaphore(id);
+
+    return 0;
+}
+
 //=============================================================================
 // syscall dispatcher
 //=============================================================================

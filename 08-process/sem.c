@@ -143,18 +143,34 @@ int sem_signal(int id)
     return 0;
 }
 
-int sem_close(int id)
+// Remove process semaphore reference
+void remove_proc_semaphore(struct task *task, int sem_id)
 {
-    struct semaphore *sem = semget(id);
+    for (int i = 0; i < NSEM_PROC; i++)
+    {
+        if (task->current_sems[i].used && task->current_sems[i].sem_id == sem_id)
+        {
+            task->current_sems[i].used = false;
+            task->current_sems[i].sem_id = -1;
+            return;
+        }
+    }
+}
 
-    acquire(&sem->lock);
-
-    sem->id = -1;
-    sem->value = 0;
-    sem->used = 0;
-    sem->lock = (spinlock){0};
-
-    deleteTasksSemaphore(id);
-
-    release(&sem_close);
+// Free a semaphore
+void sem_close(int id)
+{
+    acquire(&sem_table_lock);
+    struct semaphore *sem = find_semaphore(id);
+    if (sem && sem->ref_count > 0)
+    {
+        sem->ref_count--;
+        if (sem->ref_count == 0)
+        {
+            sem->used = false;
+            sem->id = -1;
+            sem->value = 0;
+        }
+    }
+    release(&sem_table_lock);
 }
