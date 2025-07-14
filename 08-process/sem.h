@@ -4,6 +4,9 @@
 
 #define NSEM 16 // Maximum number of semaphores in system
 
+// Forward declaration to avoid circular dependency
+struct task;
+
 // Semaphore structure
 struct semaphore
 {
@@ -33,8 +36,8 @@ void remove_proc_semaphore(struct task *task, int sem_id);
 int add_proc_semaphore(struct task *task, int sem_id);
 
 // System call interface for semaphore operations
-int *semcreate(int id, int init_value);
 struct semaphore *semget(int id);
+int semcreate(int id, int init_value);
 int sem_wait(int id);
 int sem_signal(int id);
 int sem_close(int id);

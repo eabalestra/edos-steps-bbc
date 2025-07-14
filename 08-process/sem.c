@@ -42,6 +42,7 @@ struct semaphore *semget(int id)
     {
         if (semaphores[i].used && semaphores[i].id == id)
         {
+            release(&sem_table_lock);
             return &semaphores[i];
         }
     }
@@ -85,7 +86,7 @@ void remove_proc_semaphore(struct task *task, int sem_id)
 //=============================================================================
 
 // Allocate a new semaphore
-int *semcreate(int id, int init_value)
+int semcreate(int id, int init_value)
 {
     acquire(&sem_table_lock);
 
@@ -162,10 +163,10 @@ int sem_signal(int id)
 }
 
 // Free a semaphore
-void sem_close(int id)
+int sem_close(int id)
 {
     acquire(&sem_table_lock);
-    struct semaphore *sem = find_semaphore(id);
+    struct semaphore *sem = semget(id);
     if (sem && sem->ref_count > 0)
     {
         sem->ref_count--;
@@ -175,6 +176,9 @@ void sem_close(int id)
             sem->id = -1;
             sem->value = 0;
         }
+        release(&sem_table_lock);
+        return 0; // Success
     }
     release(&sem_table_lock);
+    return -1; // Semaphore not found or already freed
 }
