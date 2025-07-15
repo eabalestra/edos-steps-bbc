@@ -2,6 +2,7 @@
 #include "task.h"
 #include "syscall.h"
 #include "console.h"
+#include "sem.h"
 
 // exit(exit_code)
 int sys_exit(struct task *task)
@@ -112,7 +113,7 @@ int sys_semwait(struct task *task)
         return -1;
     }
 
-    return sem_wait(id);
+    return semwait(id);
 }
 
 // int sem_signal(int id)
@@ -127,7 +128,7 @@ int sys_semsignal(struct task *task)
         return -1;
     }
 
-    return sem_signal(id);
+    return semsignal(id);
 }
 
 // sem_close(int id)
@@ -146,7 +147,7 @@ int sys_semclose(struct task *task)
     remove_proc_semaphore(task, id);
 
     // Decrease reference count
-    sem_close(id);
+    semclose(id);
 
     return 0;
 }
@@ -164,7 +165,12 @@ static syscall_f syscalls_table[SYSCALLS] = {
     sys_console_puts,
     sys_console_putc,
     sys_console_getc,
-    sys_sleep};
+    sys_sleep,
+    sys_semcreate,
+    sys_semget,
+    sys_semwait,
+    sys_semsignal,
+    sys_semclose};
 
 // Syscall dispatcher. Call the syscall and store result in trap frame
 void syscall(struct task *task)

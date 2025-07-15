@@ -7,4 +7,11 @@
 #define SYS_CONSOLE_GETC        4
 #define SYS_SLEEP               5
 
-#define SYSCALLS                6
+// Semaphore system calls
+#define SYS_SEMCREATE           6
+#define SYS_SEMGET              7
+#define SYS_SEMWAIT             8
+#define SYS_SEMSIGNAL           9
+#define SYS_SEMCLOSE            10
+
+#define SYSCALLS                11

@@ -43,3 +43,38 @@ sleep:
     li a7, 5
     ecall
     ret
+
+# int semcreate(int id, int init_value)
+.global semcreate
+semcreate:
+    li a7, 6
+    ecall
+    ret
+
+# int semget(int id)
+.global semget
+semget:
+    li a7, 7
+    ecall
+    ret
+
+# int semwait(int id)
+.global semwait
+semwait:
+    li a7, 8
+    ecall
+    ret
+
+# int semsignal(int id)
+.global semsignal
+semsignal:
+    li a7, 9
+    ecall
+    ret
+
+# int semclose(int id)
+.global semclose
+semclose:
+    li a7, 10
+    ecall
+    ret
