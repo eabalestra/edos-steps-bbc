@@ -33,24 +33,6 @@ bool proc_has_semaphore(struct task *task, int sem_id)
     return false;
 }
 
-// Find semaphore by ID
-struct semaphore *semget(int id)
-{
-    acquire(&sem_table_lock);
-
-    for (int i = 0; i < NSEM; i++)
-    {
-        if (semaphores[i].used && semaphores[i].id == id)
-        {
-            release(&sem_table_lock);
-            return &semaphores[i];
-        }
-    }
-
-    release(&sem_table_lock);
-    return NULL;
-}
-
 // Add process semaphore reference
 int add_proc_semaphore(struct task *task, int sem_id)
 {
@@ -118,9 +100,27 @@ int semcreate(int id, int init_value)
     return -1; // No free slots
 }
 
+// Find semaphore by ID
+struct semaphore *semget(int id)
+{
+    acquire(&sem_table_lock);
+
+    for (int i = 0; i < NSEM; i++)
+    {
+        if (semaphores[i].used && semaphores[i].id == id)
+        {
+            release(&sem_table_lock);
+            return &semaphores[i];
+        }
+    }
+
+    release(&sem_table_lock);
+    return NULL;
+}
+
 // If the semaphore's value is zero, the process is supsended.
 // Ohterwise, the value of the semaphore is decreased.
-int sem_wait(int id)
+int semwait(int id)
 {
     struct semaphore *sem = semget(id);
 
@@ -144,7 +144,7 @@ int sem_wait(int id)
 }
 
 // Increments the value of the semaphore and wakes up the sleeping processes.
-int sem_signal(int id)
+int semsignal(int id)
 {
     struct semaphore *sem = semget(id);
 
@@ -163,7 +163,7 @@ int sem_signal(int id)
 }
 
 // Free a semaphore
-int sem_close(int id)
+int semclose(int id)
 {
     acquire(&sem_table_lock);
     struct semaphore *sem = semget(id);

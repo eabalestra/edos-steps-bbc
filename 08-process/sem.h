@@ -38,6 +38,6 @@ int add_proc_semaphore(struct task *task, int sem_id);
 // System call interface for semaphore operations
 struct semaphore *semget(int id);
 int semcreate(int id, int init_value);
-int sem_wait(int id);
-int sem_signal(int id);
-int sem_close(int id);
+int semwait(int id);
+int semsignal(int id);
+int semclose(int id);
