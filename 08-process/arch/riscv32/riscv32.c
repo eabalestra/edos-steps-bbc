@@ -92,9 +92,7 @@ paddr va2kernel_address(pte *pgtbl, vaddr va)
 {
     pte *entry = get_pte(pgtbl, va, false);
     if (entry) {
-        paddr pbase = pte_pa((size_t) *entry);
-        printf("va2kernel_address: pbase=%x\n", pbase);
-        return  pbase | va_offset(va);
+        return  pte_pa((size_t) *entry) | va_offset(va);
     }
     panic("PTE entry invalid!");
 }

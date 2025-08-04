@@ -158,12 +158,14 @@ static inline void syscall_put_result(struct trap_frame *tf, int value)
 }
 
 //=============================================================================
-// Paging
-// Virtual address format: [idx1(10 bits)][idx0(10 bits)][offset(12 bits)]
+// Paging: RISCV32 uses two level page tables (page size of 4KB).
+// Each node is an array of 1024 entries (ptes).
+// Each pte is a 32 bits value: pte.ppn (22 bits) and pte.flags (12 bits).
+// Virtual address (va) format: idx1: 10 bits, idx0: 10 bits, offset: 12 bits.
 //=============================================================================
 #define PAGE_SIZE   4096
 
-// page table entry (pte): [ppn(22 bits)][flags(10 bits)]
+// page table entry (pte). pte.ppn: 22 bits, pte.flags: 10 bits
 typedef uint32 pte;
 
 // kernel page table initialized by init_vm() in vm.c
@@ -182,13 +184,13 @@ extern pte* kernel_pgtbl;
 // clear pte flags
 #define clear_pte_flags(entry, flags) (*entry &= ~flags)
 
-// is a address aligned to PAGE-SIZE?
-#define page_aligned(addr) ((addr & 0xfffffc00) == addr)
+// get the page base address (round down)
+#define page_base_addr(addr) (addr & 0xfffff000)
 
-// get the page base address
-#define page_base_addr(addr) (addr & 0xfffffc00)
+// is a address aligned to page size?
+#define page_aligned(addr) (page_base_addr(addr) == addr)
 
-// get virtual address offset
+// get virtual address offset (12 low order bits)
 #define va_offset(va) (va & 0xfff)
 
 // get index1 (10 higher order bits) on level 1 (root) node
@@ -307,7 +309,7 @@ static inline int cpuid(void)
     return v;
 }
 
-// disable S-Mode interruputs: clear sstatus.SIE
+// disable S-Mode interrupts: clear sstatus.SIE
 static inline void disable_interrupts(void)
 {
     __asm__ __volatile__ ("csrci sstatus, 0x2");
@@ -320,7 +322,7 @@ static inline void enable_interrupts(void)
 }
 
 // are S-mode interrupts enabled?
-static inline bool irq_status(void)
+static inline bool irq_enabled(void)
 {
     size_t v;
     __asm__ __volatile__ ("csrr %0, sstatus" : "=r" (v) );

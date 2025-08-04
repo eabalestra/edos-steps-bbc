@@ -1,3 +1,4 @@
+// spinlock.c: extracted/adapted from xv6.
 #include "spinlock.h"
 #include "arch.h"
 #include "task.h"
@@ -5,7 +6,7 @@
 // Disable interrupts and count nested calls
 void push_irq_off(void)
 {
-    bool old = irq_status();
+    bool old = irq_enabled();
     int cpu_id = cpuid();
 
     disable_interrupts();
