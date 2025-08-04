@@ -160,6 +160,8 @@ get_ticks(), cpu_id, cause, pc, status, task->name);
         case INSTRUCTION_PAGE_FAULT:
         case STORE_ACCESS_FAULT:
         case STORE_PAGE_FAULT:
+            printf("Task %s in CPU %d page fault. Killing task...\n",
+                   task->name, cpu_id);
             task->exit_code = 1; task->killed = true; 
             break;
 

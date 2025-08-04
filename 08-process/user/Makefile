@@ -13,7 +13,7 @@ OBJCOPY = $(PREFIX)objcopy
 # runtime and standard library)
 CFLAGS= -O -Wall -Wextra -MD -mcmodel=medany -march=rv32imazicsr -mabi=ilp32 \
         -ffreestanding -nostdlib -fno-common -fno-omit-frame-pointer \
-		-fno-stack-protector -nostartfiles
+		-fno-stack-protector -nostartfiles -static
 
 PROGS = idle init
 

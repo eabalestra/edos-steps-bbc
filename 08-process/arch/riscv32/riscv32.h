@@ -189,7 +189,7 @@ extern pte* kernel_pgtbl;
 #define page_base_addr(addr) (addr & 0xfffffc00)
 
 // get virtual address offset
-#define va_offset(va) (va & 0x3ff)
+#define va_offset(va) (va & 0xfff)
 
 // get index1 (10 higher order bits) on level 1 (root) node
 #define va_index1(va) ((va >> 22) & 0x3ff)
@@ -198,7 +198,7 @@ extern pte* kernel_pgtbl;
 #define va_index0(va) ((va >> 12) & 0x3ff)
 
 // get physical page number from pte
-#define pte_ppn(pte) ((pte >> 10) & 0x3ff)
+#define pte_ppn(pte) (pte >> 10)
 
 // get physical page number (ppn) from physical address
 #define pa2ppn(pa) ((pa / PAGE_SIZE) << 10)

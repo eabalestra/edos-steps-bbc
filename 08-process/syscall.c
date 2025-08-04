@@ -24,7 +24,10 @@ int sys_console_puts(struct task *task)
 {
     struct trap_frame *tf = task_trap_frame_address(task);
     size_t str = syscall_arg(tf, 0);
-    char *kaddr = (char *)va2kernel_address(task->pgtbl, str);
+
+    char *kaddr = (char *)va2kernel_address(task->pgtbl, (vaddr)str);
+    printf("sys_console_puts: va=%x, pa=%x\n", (char *)str, kaddr);
+
     printf("%s", kaddr);
     return 0;
 }
