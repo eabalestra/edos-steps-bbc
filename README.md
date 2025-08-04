@@ -1,37 +1,37 @@
 # EDOS: A simple educational operating system from scratch
 
 This project contains documentation and code for building a minimalist, very
-simple operating system (OS) from scratch. It was initially developed by Prof.
-Marcelo Arroyo for the operating systems course at Río Cuarto National
-University, Argentina.
+simple operating system (OS) from scratch. It was initially developed and
+maintaned by Prof. Marcelo Arroyo for the operating systems course at Río Cuarto
+National University, Argentina.
 
 We were using [xv6](https://pdos.csail.mit.edu/6.1810/2024/xv6.html) in the
 past. Xv6 is a great resource for OS teaching. After we got some experience with
 xv6, we decide to build an OS from scratch in simple steps.
 
 The main goal is to get a simple OS kernel with a basic set of system calls.
-Students can extend it with a UNIX like API and applications, similar to xv6.
+Students can extend it with a UNIX like API and applications, similar to xv6 or
+build a microkernel with message passing primitives.
 
 EDOS can be used as a set of hands-on laboratory or homework projects to
-develop a minimal (but almost complete) OS from scratch.
+develop a minimal (but functional) OS from scratch.
 
-This project contain the EDOS development in steps. Teachers can use it as a
-incremental development of an OS from booting to running user applications in
-simple steps.
+This repository contain the EDOS development in steps.
 
-EDOS run on a RISC-V 32-bit architecture. Should be easy to migrate to another
-platform.
+This first EDOS implementation runs on a RISC-V 32-bit architecture. Should be
+easy to migrate to another platform.
 
-In each step directory there is a `README.md` file with goals, some concepts and
+In each step directory there is a `README.md` file with goals, concepts and
 implementation details. Also, some exercises for students are proposed.
 
 This project is under development (May, 2025). Until now, developed steps are
-from 0 (boot) until 7 (memory management).
+from 0 (boot) until 8 (process management).
 
-The main goal is to keep it simple and small with code focusing on readability
-than performance. We'l try to maintain it well documented for easy hacking.
+The main goal is to keep it simple and small with code focusing more on
+readability than performance. We'l try to maintain it well documented for easy
+hacking.
 
-Contributions and comments are welcome.
+Contributions, comments and bug fixes are welcome.
 
 ## Requirements
 
@@ -97,7 +97,7 @@ following the above instructions.
    https://github.com/nuta/operating-system-in-1000-lines
 5. _Operating Systems UNRC Course Notes (in Spanish)_. Marcelo Arroyo.
    https://marceloarroyo.gitlab.io/cursos/SO/index.html
-6. _Mini RISCV OS_: https://github.com/cccriscv/mini-riscv-os
+6. *Mini RISCV OS*: https://github.com/cccriscv/mini-riscv-os
 
 ## Authors
 
