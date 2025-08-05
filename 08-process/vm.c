@@ -46,5 +46,5 @@ void* copy_from_user(pte* pgtbl, paddr dst, vaddr src, int count)
 void* copy_to_user(pte* pgtbl, vaddr dst, paddr src, int count)
 {
     paddr kdst = va2kernel_address(pgtbl, dst);
-    return kdst ? memcpy((void*) dst, (void*) kdst, count) : NULL;
+    return kdst ? memcpy((void*) kdst, (void*) src, count) : NULL;
 }
