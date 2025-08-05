@@ -34,3 +34,17 @@ void unmap_region(pte* pgtbl, vaddr va, uint size, bool free)
         unmap_page(pgtbl, a, free);
     }
 }
+
+// copy data from user space to kernel space. Return the count of bytes copied.
+void* copy_from_user(pte* pgtbl, paddr dst, vaddr src, int count)
+{
+    paddr ksrc = va2kernel_address(pgtbl, src);
+    return ksrc ? memcpy((void*) dst, (void*) ksrc, count) : NULL;
+}
+
+// copy data from kernel space to user space. Return the count of bytes copied.
+void* copy_to_user(pte* pgtbl, vaddr dst, paddr src, int count)
+{
+    paddr kdst = va2kernel_address(pgtbl, dst);
+    return kdst ? memcpy((void*) dst, (void*) kdst, count) : NULL;
+}
