@@ -73,6 +73,7 @@ int sys_semcreate(struct task *task)
 
     if (result == 0)
     {
+        // TODO: por que hace esto? La current task lo crea al semaforo pero no neccesariamente lo usa?
         // Add to process semaphore table
         if (add_proc_semaphore(task, id) != 0)
         {
@@ -83,7 +84,7 @@ int sys_semcreate(struct task *task)
     return result;
 }
 
-// TODO: ask if this is correct, because we don't know how this works
+// TODO: ask if this is correct, because we don't know how this works!
 int sys_semget(struct task *task)
 {
     struct trap_frame *tf = task_trap_frame_address(task);
@@ -108,7 +109,7 @@ int sys_semwait(struct task *task)
     int id = (int)syscall_arg(tf, 0); // Get semaphore ID
 
     // Check if process has access to this semaphore
-    if (!proc_has_semaphore(task, id))
+    if (proc_has_semaphore(task, id))
     {
         return -1;
     }
@@ -143,6 +144,7 @@ int sys_semclose(struct task *task)
         return -1;
     }
 
+    // Por que esto aca? (delfi)
     // Remove from process table
     remove_proc_semaphore(task, id);
 
