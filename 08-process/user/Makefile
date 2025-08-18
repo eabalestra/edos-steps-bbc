@@ -15,7 +15,7 @@ CFLAGS= -O -Wall -Wextra -MD -mcmodel=medany -march=rv32imazicsr -mabi=ilp32 \
         -ffreestanding -nostdlib -fno-common -fno-omit-frame-pointer \
 		-fno-stack-protector -nostartfiles -static
 
-PROGS = idle init
+PROGS = idle init producer consumer
 
 # build the embedded file system (efs)
 all: $(PROGS)
@@ -34,6 +34,20 @@ idle: idle.c edoslib.o usys.o
 	 edoslib.o usys.o idle.c
 	$(OBJDUMP) -d idle > idle.asm
 	$(OBJCOPY) -S -O binary idle idle.bin
+
+# build producer
+producer: producer.c edoslib.o usys.o
+	$(CC) $(CFLAGS) -Wl,-Tuser.ld,--build-id=none -o producer -e start \
+	 edoslib.o usys.o producer.c
+	$(OBJDUMP) -d producer > producer.asm
+	$(OBJCOPY) -S -O binary producer producer.bin
+
+# build consumer 
+consumer: consumer.c edoslib.o usys.o
+	$(CC) $(CFLAGS) -Wl,-Tuser.ld,--build-id=none -o consumer -e start \
+	 edoslib.o usys.o consumer.c
+	$(OBJDUMP) -d consumer > consumer.asm
+	$(OBJCOPY) -S -O binary consumer consumer.bin
 
 # build edos library
 edoslib.o: edoslib.c

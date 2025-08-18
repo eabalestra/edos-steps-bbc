@@ -134,6 +134,7 @@ int semwait(int id)
     // TODO: posible bug (Chino)
     sem->value--;
 
+    // PARA MI ESTO SE TIENE QUE HACER
     // struct task *task = current_task();
     // task->current_sems[task->sem_count] = &sem->id;
     // task->sem_count++;
@@ -154,6 +155,7 @@ int semsignal(int id)
 
     wakeup(&sem->id);
 
+    // PARA MI ESTO SE TIENE QUE HACER
     // struct task *task = current_task();
     // task->sem_count--;
 

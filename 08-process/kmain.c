@@ -16,6 +16,9 @@ void kernel_main(void) {
         create_process("init");
         // init_external_interrupts();
 
+        create_process("producer");
+        create_process("consumer");
+
         __sync_synchronize();
         ready = 1;
     }
@@ -29,4 +32,13 @@ void kernel_main(void) {
     // init_external_irqs_in_cpu(cpu_id);
     printf("Running scheduler on CPU %d\n", cpuid());
     scheduler();
+
+
+
+
+    /*
+    Implementar dos procesos de usuario que usen semáforos para acceder en forma 
+    sincronizada a un bloque de memoria compartida. Hacer el kernel asigne y 
+    mapee una página compartida entre ellos 
+    */
 }
