@@ -1,12 +1,12 @@
 #include "edoslib.h"
 
+// Shared buffer address
+#define SHARED_BUFFER ((volatile int *)0x40000000)
+
 void add_to_buffer(int value)
 {
-    sys_semwait(&mutex);
-
-    // add value to buffer
-
-    sys_semsignal(&mutex);
+    // Write value directly to shared memory address
+    *SHARED_BUFFER = value;
 }
 
 static int value_counter = 0;
@@ -22,9 +22,12 @@ int main(void)
     while (true)
     {
         int value = gen_value();
-        sem_wait(&full);
         add_to_buffer(value);
-        sem_notify(&empty);
+        printf("Producer wrote: %d\n", value);
+
+        // Small delay to see the output
+        for (int i = 0; i < 1000000; i++)
+            ;
     }
 
     return 0;
