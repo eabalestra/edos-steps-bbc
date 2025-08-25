@@ -2,11 +2,17 @@
 .vscode/
 
 # Compiled object files
-*.o 
-*.bin 
-*.d 
-*.asm
+**/*.o 
+**/*.bin 
+**/*.d 
+**/*.asm
 
 #
 init
 idle
+producer
+consumer
+
+#
+kernel
+kernel.map
