@@ -101,7 +101,8 @@ int semcreate(int id, int init_value)
 }
 
 // Find semaphore by ID
-struct semaphore *semget(int id)
+// Returns the index in the semaphore table or NULL if not found
+int semget(int id)
 {
     acquire(&sem_table_lock);
 
@@ -110,7 +111,7 @@ struct semaphore *semget(int id)
         if (semaphores[i].used && semaphores[i].id == id)
         {
             release(&sem_table_lock);
-            return &semaphores[i];
+            return i;
         }
     }
 
@@ -122,7 +123,8 @@ struct semaphore *semget(int id)
 // Ohterwise, the value of the semaphore is decreased.
 int semwait(int id)
 {
-    struct semaphore *sem = semget(id);
+    int sem_index = semget(id);
+    struct semaphore *sem = &(semaphores[sem_index]);
 
     acquire(&sem->lock);
 
@@ -134,10 +136,12 @@ int semwait(int id)
     // TODO: posible bug (Chino)
     sem->value--;
 
-    // PARA MI ESTO SE TIENE QUE HACER
+    // PARA MI ESTO SE TIENE QUE HACER en algun lado (delfi)
     // struct task *task = current_task();
     // task->current_sems[task->sem_count] = &sem->id;
     // task->sem_count++;
+
+    // no haria falta tambien actualizar el ref_count?
 
     release(&sem->lock);
 
@@ -147,7 +151,8 @@ int semwait(int id)
 // Increments the value of the semaphore and wakes up the sleeping processes.
 int semsignal(int id)
 {
-    struct semaphore *sem = semget(id);
+    int sem_index = semget(id);
+    struct semaphore *sem = &(semaphores[sem_index]);
 
     acquire(&sem->lock);
 
@@ -155,7 +160,7 @@ int semsignal(int id)
 
     wakeup(&sem->id);
 
-    // PARA MI ESTO SE TIENE QUE HACER
+    // PARA MI ESTO SE TIENE QUE HACER (delfi)
     // struct task *task = current_task();
     // task->sem_count--;
 
@@ -164,11 +169,14 @@ int semsignal(int id)
     return 0;
 }
 
-// Free a semaphore
+// Releases a semaphore if no processes are using it
 int semclose(int id)
 {
     acquire(&sem_table_lock);
-    struct semaphore *sem = semget(id);
+
+    int sem_index = semget(id);
+    struct semaphore *sem = &(semaphores[sem_index]);
+
     if (sem && sem->ref_count > 0)
     {
         sem->ref_count--;
