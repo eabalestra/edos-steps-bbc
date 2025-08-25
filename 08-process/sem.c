@@ -89,7 +89,7 @@ int semcreate(int id, int init_value)
             sem = &(semaphores[i]);
             sem->id = id;
             sem->value = init_value;
-            sem->used = 1;
+            sem->used = true;
             sem->ref_count = 0;
             sem->lock = (spinlock){0};
             release(&sem_table_lock);

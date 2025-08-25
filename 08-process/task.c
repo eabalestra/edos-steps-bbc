@@ -6,6 +6,9 @@
 #include "vm.h"
 #include "efs.h"
 
+// TODO
+#include "syscall.c"
+
 // kernel ticks (incremented in each timer interrupt)
 volatile unsigned int ticks = 0;
 spinlock ticks_lock = 0;
@@ -20,17 +23,19 @@ static struct task tasks[TASK_MAX];
 static uint last_tid = 0, last_pid = 0;
 
 // The kernel page table
-extern pte* kernel_pgtbl;
+extern pte *kernel_pgtbl;
 
 // defined in trap.c
-extern void return_to_user_mode(void); 
+extern void return_to_user_mode(void);
 
 void init_tasks(void)
 {
-    for (int i=0; i < NCPU; i++) {
+    for (int i = 0; i < NCPU; i++)
+    {
         cpus_state[i].task = NULL;
     }
-    for (int i=0; i < TASK_MAX; i++) {
+    for (int i = 0; i < TASK_MAX; i++)
+    {
         tasks[i].state = UNUSED;
         tasks[i].lock = 0;
     }
@@ -44,29 +49,32 @@ void init_task(void)
 }
 
 // return current_task in this cpu
-struct task* current_task(void)
+struct task *current_task(void)
 {
     return cpus_state[cpuid()].task;
 }
 
 // create task with 'pc' as initial program counter
-struct task* create_task(char* name, task_function f) {
+struct task *create_task(char *name, task_function f)
+{
     // Find an unused tasks table slot
     struct task *task = NULL;
 
-    for (int i = 0; i < TASK_MAX && !task; i++) {
+    for (int i = 0; i < TASK_MAX && !task; i++)
+    {
         acquire(&tasks[i].lock);
-        if (tasks[i].state == UNUSED) {
+        if (tasks[i].state == UNUSED)
+        {
             task = &(tasks[i]);
             memset(&task->ctx, 0, sizeof(struct context));
-            task->ctx.ra = (address) f;
+            task->ctx.ra = (address)f;
             task->kstack = alloc_page();
-            task->ctx.sp = (address) (task->kstack + PAGE_SIZE);
-            task->tid    = ++last_tid;
-            task->pid    = 0;
+            task->ctx.sp = (address)(task->kstack + PAGE_SIZE);
+            task->tid = ++last_tid;
+            task->pid = 0;
             task->cpu_id = -1;
             task->killed = false;
-            task->pgtbl  = kernel_pgtbl;
+            task->pgtbl = kernel_pgtbl;
             task->wait_condition = 0;
             // TODO : task->sem_count = 0; // Initialize semaphore count
             if (strlen(name) > TASK_NAME_LEN)
@@ -80,7 +88,7 @@ struct task* create_task(char* name, task_function f) {
 }
 
 // free task resources. Called from scheduler.
-void free_resources(struct task* t)
+void free_resources(struct task *t)
 {
     printf("Freeing task %s resources...\n", t->name);
     free_page(t->kstack);
@@ -92,14 +100,19 @@ void scheduler(void)
 {
     int cpu_id = cpuid();
     cpus_state[cpu_id].task = NULL;
-    while (1) {
+    while (1)
+    {
         enable_interrupts();
-        for (int i=0; i<TASK_MAX; i++) {
+        for (int i = 0; i < TASK_MAX; i++)
+        {
             acquire(&tasks[i].lock);
-            if (tasks[i].state == ZOMBIE) {
+            if (tasks[i].state == ZOMBIE)
+            {
                 free_resources(&tasks[i]);
-            } else if (tasks[i].state == RUNNABLE) {
-                struct task* next_task = &tasks[i];
+            }
+            else if (tasks[i].state == RUNNABLE)
+            {
+                struct task *next_task = &tasks[i];
 
                 next_task->state = RUNNING;
                 next_task->cpu_id = cpu_id;
@@ -124,7 +137,7 @@ void scheduler(void)
 // 2. cpus_state[cpu_id].noff == 1
 // 3. interrupts enabled
 // 4. current->state == RUNNING
-static void sched(struct task* current)
+static void sched(struct task *current)
 {
     int cpu_id = cpuid();
     int irq_status = cpus_state[cpu_id].irq_enabled;
@@ -161,9 +174,9 @@ void yield(void)
 // Suspend (sleep) current task. Lock lk is related to waiting condition or
 // resource.
 // Invariant: cause != NULL && lk acquired
-void suspend(void* condition, spinlock* lk)
+void suspend(void *condition, spinlock *lk)
 {
-    struct task* task = current_task();
+    struct task *task = current_task();
     acquire(&task->lock);
 
     // release lk to avoid deadlock
@@ -184,14 +197,17 @@ void suspend(void* condition, spinlock* lk)
 }
 
 // Make RUNNABLE tasks waiting for condition
-void wakeup(void* condition)
+void wakeup(void *condition)
 {
-    struct task* current = current_task();
-    for (int i = 0; i < TASK_MAX; i++) {
-        struct task* t = &tasks[i];
-        if (t != current) {
+    struct task *current = current_task();
+    for (int i = 0; i < TASK_MAX; i++)
+    {
+        struct task *t = &tasks[i];
+        if (t != current)
+        {
             acquire(&t->lock);
-            if (t->state == WAITING && t->wait_condition == condition) {
+            if (t->state == WAITING && t->wait_condition == condition)
+            {
                 printf("pid %d awake!\n", t->pid);
                 t->state = RUNNABLE;
             }
@@ -208,19 +224,21 @@ void sleep(uint n)
         panic("sleep: No current task!");
     acquire(&ticks_lock);
     t->sleep_ticks = n;
-    suspend((void*) &ticks, &ticks_lock);
+    suspend((void *)&ticks, &ticks_lock);
     release(&ticks_lock);
 }
 
 // Wait until a given task exit. Return finished task exit_code.
-int wait_for_task(struct task* t)
+int wait_for_task(struct task *t)
 {
     int exit_code = 0;
     acquire(&t->lock);
-    if (t->state != UNUSED && t->state != ZOMBIE) {
+    if (t->state != UNUSED && t->state != ZOMBIE)
+    {
         suspend(t, &t->lock);
     }
-    if (t->state == ZOMBIE) {
+    if (t->state == ZOMBIE)
+    {
         exit_code = t->exit_code;
         t->state = UNUSED;
     }
@@ -231,7 +249,6 @@ int wait_for_task(struct task* t)
 // Set int as parent of childs of task
 static void reparent(struct task *task)
 {
-
 }
 
 // current task exits
@@ -240,8 +257,14 @@ void terminate(void)
     struct task *t = current_task();
     if (!t)
         panic("exit: No current task!");
-    
+
     t->state = ZOMBIE;
+
+    // TODO: sem close??
+    // DUDA! usar la system call o no?
+    // semclose(t->tid);
+
+    sys_semclose(t);
 
     // to do: close files
 
@@ -276,10 +299,13 @@ void inc_ticks(void)
     ticks++;
     release(&ticks_lock);
     // wakeup tasks waiting for sleep(n)
-    for (int i=0; i<TASK_MAX; i++) {
+    for (int i = 0; i < TASK_MAX; i++)
+    {
         acquire(&tasks[i].lock);
-        if (tasks[i].state == WAITING && tasks[i].wait_condition == &ticks) {
-            if (--tasks[i].sleep_ticks == 0) {
+        if (tasks[i].state == WAITING && tasks[i].wait_condition == &ticks)
+        {
+            if (--tasks[i].sleep_ticks == 0)
+            {
                 printf("Task pid=%d awake.\n", tasks[i].pid);
                 tasks[i].state = RUNNABLE;
             }
@@ -289,7 +315,7 @@ void inc_ticks(void)
 }
 
 // load and map program sections from the embedded file system
-static bool load_program(pte* pgtbl, char *path)
+static bool load_program(pte *pgtbl, char *path)
 {
     struct file *file = efs_file(path);
     unsigned int count = 0;
@@ -298,14 +324,16 @@ static bool load_program(pte* pgtbl, char *path)
     if (!file || file->type != EFS_FILE_PROGRAM)
         return false;
 
-    for (vaddr va = PROC_MIN_VA; count < file->length; va += PAGE_SIZE) {
-        paddr pa = (paddr) alloc_page();
-        if (!pa) {
+    for (vaddr va = PROC_MIN_VA; count < file->length; va += PAGE_SIZE)
+    {
+        paddr pa = (paddr)alloc_page();
+        if (!pa)
+        {
             unmap_region(pgtbl, 0, PROC_MAX_VA, true);
             return false;
         }
         int n = min(file->length - count, PAGE_SIZE);
-        memcpy((char*)pa, file->data + count, n);
+        memcpy((char *)pa, file->data + count, n);
         printf("mapping user code va=%x to pa=%x\n", va, pa);
         map_page(pgtbl, va, pa, flags);
         count += n;
@@ -333,26 +361,28 @@ static bool load_program(pte* pgtbl, char *path)
 // |    arg_n-1    | (**) arg_n-1: null-terminated string
 // |      ...      |
 // +---------------+
-vaddr setup_main_args(struct task *task, uint8 *sp, char* args[])
+vaddr setup_main_args(struct task *task, uint8 *sp, char *args[])
 {
     struct trap_frame *tf = task_trap_frame_address(task);
     int offset = 0, argc;
     vaddr argv[50]; // arguments virtual addresses
 
     // push args strings and build argv[] array
-    for (argc = 0; args && args[argc] && argc < 100; argc++) {
+    for (argc = 0; args && args[argc] && argc < 100; argc++)
+    {
         offset -= strlen(args[argc]) + 1;
         sp -= offset;
-        strcpy((char*)sp, args[argc]);
+        strcpy((char *)sp, args[argc]);
         // we need to set virtual address in argv[]
         argv[argc] = PROC_MAX_VA - offset;
     }
 
     // push char* argv[] array
-    for (int i=0; i<argc; i++) {
-        offset -= sizeof(char*);
+    for (int i = 0; i < argc; i++)
+    {
+        offset -= sizeof(char *);
         sp -= offset;
-        *((char*)sp) = argv[i];
+        *((char *)sp) = argv[i];
     }
 
     // set arguments argc and argv in trap frame
@@ -374,27 +404,27 @@ static void start_process(void)
 
 // exec(task, program)
 // replace image memory of task by loading program sections
-bool exec(struct task* task, char* path, char* args[])
+bool exec(struct task *task, char *path, char *args[])
 {
     struct trap_frame *tf = task_trap_frame_address(task);
 
     // allocate for a new page table
-    pte* new_pgtbl = (pte*) alloc_page();
+    pte *new_pgtbl = (pte *)alloc_page();
     if (!new_pgtbl)
         goto error;
 
     // copy kernel page table
     memcpy(new_pgtbl, kernel_pgtbl, PAGE_SIZE);
-    
+
     // allocate, map and load text and data from program
     if (!load_program(new_pgtbl, path))
         goto error;
-    
+
     // allocate and map the user mode stack at end of process address space
-    uint8 *ustack = (uint8 *) alloc_page();
+    uint8 *ustack = (uint8 *)alloc_page();
     if (!ustack)
         goto error;
-    map_page(new_pgtbl, PROC_MAX_VA - PAGE_SIZE, (paddr) ustack,
+    map_page(new_pgtbl, PROC_MAX_VA - PAGE_SIZE, (paddr)ustack,
              PAGE_R | PAGE_W | PAGE_U);
 
     // push command line arguments for main(int argc, char* argv[])
@@ -405,15 +435,16 @@ bool exec(struct task* task, char* path, char* args[])
     tf->pc = 0;  // set program entry point
 
     // if current task is a process, free old memory
-    if (is_process(task)) {
+    if (is_process(task))
+    {
         unmap_region(task->pgtbl, 0, PROC_MAX_VA, true);
         free_page(task->pgtbl);
     }
     task->pgtbl = new_pgtbl;
 
     // set context to use the kernel mode stack
-    task->ctx.sp = (size_t) tf;
-    
+    task->ctx.sp = (size_t)tf;
+
     return sp;
 
 error:
@@ -424,14 +455,15 @@ error:
 // create and setup a new process (user mode task)
 bool create_process(char *path)
 {
-    struct task* t = create_task(path, start_process);
+    struct task *t = create_task(path, start_process);
 
     if (!t)
         panic("Create process: No tasks free slot!");
-    
+
     t->pid = ++last_pid;
 
-    if (!exec(t, path, 0)) {
+    if (!exec(t, path, 0))
+    {
         release(&t->lock);
         return false;
     }
