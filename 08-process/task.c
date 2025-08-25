@@ -6,9 +6,6 @@
 #include "vm.h"
 #include "efs.h"
 
-// TODO
-#include "syscall.c"
-
 // kernel ticks (incremented in each timer interrupt)
 volatile unsigned int ticks = 0;
 spinlock ticks_lock = 0;
