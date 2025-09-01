@@ -111,7 +111,7 @@ void         terminate(void);
 void exit(void);
 
 // create a process (user task)
-int create_process(char *path);
+struct task* create_process(char *path);
 
 // exec program in task t
 int exec(struct task* t, char* path, char* args[]);

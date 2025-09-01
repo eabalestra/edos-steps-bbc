@@ -23,10 +23,11 @@ int main(void)
     {
         int value = gen_value();
         add_to_buffer(value);
+
         printf("Producer wrote: %d\n", value);
 
         // Small delay to see the output
-        for (int i = 0; i < 1000000; i++)
+        for (int i = 0; i < 2000000; i++)
             ;
     }
 

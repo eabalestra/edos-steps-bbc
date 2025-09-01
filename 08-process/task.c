@@ -450,7 +450,8 @@ error:
 }
 
 // create and setup a new process (user mode task)
-bool create_process(char *path)
+// TODO
+struct task *create_process(char *path)
 {
     struct task *t = create_task(path, start_process);
 
@@ -462,10 +463,10 @@ bool create_process(char *path)
     if (!exec(t, path, 0))
     {
         release(&t->lock);
-        return false;
+        return NULL;
     }
 
     t->state = RUNNABLE;
 
-    return true;
+    return t;
 }

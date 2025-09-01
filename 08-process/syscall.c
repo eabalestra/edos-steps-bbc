@@ -54,6 +54,10 @@ int sys_sleep(struct task *task)
     return 0;
 }
 
+//=============================================================================
+// Semaphore
+//=============================================================================
+
 // struct semaphore *semcreate(int id, int init_value)
 int sys_semcreate(struct task *task)
 {

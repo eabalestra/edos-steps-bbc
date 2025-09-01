@@ -7,6 +7,9 @@
 
 static volatile int ready = 0;
 
+#define PROCA_VIRTUAL_ADDRESS 0x40000000
+#define PROCB_VIRTUAL_ADDRESS 0x20000000
+
 // Shared buffer physical page - allocated once and mapped to both processes
 static uint8 *shared_buffer_page = NULL;
 
@@ -28,11 +31,11 @@ void map_shared_buffer_to_process(struct task *task)
     }
 
     // Map the same physical page to both processes at the same virtual address
-    map_page(task->pgtbl, SHARED_BUFFER_VA, (paddr)shared_buffer_page,
+    map_page(task->pgtbl, PROCA_VIRTUAL_ADDRESS, (paddr)shared_buffer_page,
              PAGE_R | PAGE_W | PAGE_U);
 
     printf("Shared buffer mapped to process '%s' at virtual address: 0x%x\n",
-           task->name, SHARED_BUFFER_VA);
+           task->name, PROCA_VIRTUAL_ADDRESS);
 }
 
 // External function to map shared buffer
@@ -49,14 +52,13 @@ void kernel_main(void)
         create_process("init");
         // init_external_interrupts();
 
-        create_process("producer");
-        create_process("consumer");
+        struct task *producerTask = create_process("producer");
+        struct task *consumerTask = create_process("consumer");
 
-        // Map shared buffer for producer and consumer processes
-        if (strcmp(path, "producer") == 0 || strcmp(path, "consumer") == 0)
-        {
-            map_shared_buffer_to_process(t);
-        }
+        paddr shared_buffer_page = alloc_page();
+
+        map_shared_buffer_to_process(producerTask);
+        map_shared_buffer_to_process(consumerTask);
 
         __sync_synchronize();
         ready = 1;

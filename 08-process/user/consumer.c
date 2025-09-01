@@ -23,6 +23,7 @@ int main(void)
     {
         int value = get_from_buffer();
         process(value);
+        
         printf("Consumer read: %d\n", value);
 
         // Small delay to see the output
