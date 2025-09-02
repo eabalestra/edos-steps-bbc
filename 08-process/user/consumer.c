@@ -23,22 +23,21 @@ int main(void)
     // (no need to call semcreate again, just semwait/semsignal)
     while (true)
     {
-        // Wait until buffer has something
-        semwait(2);   // full
+        semwait(1); // empty
 
         // Enter critical section
-        semwait(3);   // mutex
+        semwait(3); // mutex
         int value = get_from_buffer();
-        //process(value);
         semsignal(3); // mutex
 
         printf("Consumer read: %d\n", value);
 
         // Signal that buffer is empty again
-        semsignal(1); // empty
+        semsignal(2); // full
 
         // Small delay
-        for (int i = 0; i < 2000000; i++);
+        for (int i = 0; i < 2000000; i++)
+            ;
     }
 
     return 0;

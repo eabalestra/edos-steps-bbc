@@ -31,7 +31,7 @@ extern int sleep(int ticks);
 
 // Semaphore system calls
 extern int semcreate(int id, int init_value);
-extern int semget(int id);  // TODO: check if this will be change in the future
+extern int semget(int id);  // TODO: check if this will be changed in the future
 extern int semwait(int id);
 extern int semsignal(int id);
 extern int semclose(int id);
