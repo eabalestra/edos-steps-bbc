@@ -7,14 +7,14 @@
 
 static volatile int ready = 0;
 
-#define PROCA_VIRTUAL_ADDRESS 0x40000000
-#define PROCB_VIRTUAL_ADDRESS 0x20000000
+#define PRODUCER_VA 0x40000000
+#define CONSUMER_VA 0x20000000
 
-// Shared buffer physical page - allocated once and mapped to both processes
+// Shared buffer physical page
 static uint8 *shared_buffer_page = NULL;
 
 // Map shared buffer to a process address space
-void map_shared_buffer_to_process(struct task *task)
+static void map_shared_buffer_to_process(struct task *task, vaddr user_va)
 {
     if (!shared_buffer_page)
     {
@@ -31,15 +31,13 @@ void map_shared_buffer_to_process(struct task *task)
     }
 
     // Map the same physical page to both processes at the same virtual address
-    map_page(task->pgtbl, PROCA_VIRTUAL_ADDRESS, (paddr)shared_buffer_page,
+    map_page(task->pgtbl, user_va, (paddr)shared_buffer_page,
              PAGE_R | PAGE_W | PAGE_U);
 
     printf("Shared buffer mapped to process '%s' at virtual address: 0x%x\n",
-           task->name, PROCA_VIRTUAL_ADDRESS);
+           task->name, user_va);
 }
 
-// External function to map shared buffer
-extern void map_shared_buffer_to_process(struct task *task);
 
 void kernel_main(void)
 {
@@ -52,13 +50,17 @@ void kernel_main(void)
         create_process("init");
         // init_external_interrupts();
 
-        struct task *producerTask = create_process("producer");
-        struct task *consumerTask = create_process("consumer");
 
-        paddr shared_buffer_page = alloc_page();
+        struct task *producerProc = create_process("producer");
+        if (!producerProc) panic("failed to create producer");
 
-        map_shared_buffer_to_process(producerTask);
-        map_shared_buffer_to_process(consumerTask);
+        struct task *consumerProc = create_process("consumer");
+        if (!consumerProc) panic("failed to create consumer");
+
+        // Map the same physical page at DIFFERENT virtual addresses
+        map_shared_buffer_to_process(producerProc, (vaddr)PRODUCER_VA);
+        map_shared_buffer_to_process(consumerProc, (vaddr)CONSUMER_VA);
+
 
         __sync_synchronize();
         ready = 1;
