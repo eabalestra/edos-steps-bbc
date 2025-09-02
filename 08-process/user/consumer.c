@@ -27,17 +27,17 @@ int main(void)
     // (no need to call semcreate again, just semwait/semsignal)
     while (true)
     {
-        semwait(EMPTY);
+        //semwait(EMPTY);
 
         // Enter critical section
-        semwait(MUTEX);
+        //semwait(MUTEX);
         int value = get_from_buffer();
-        semsignal(MUTEX);
+        //semsignal(MUTEX);
 
         printf("Consumer read: %d\n", value);
 
         // Signal that buffer is empty again
-        semsignal(FULL);
+        //semsignal(FULL);
 
         // Small delay
         for (int i = 0; i < 2000000; i++)

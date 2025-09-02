@@ -38,7 +38,6 @@ static void map_shared_buffer_to_process(struct task *task, vaddr user_va)
            task->name, user_va);
 }
 
-
 void kernel_main(void)
 {
     int cpu_id = cpuid();
@@ -50,17 +49,17 @@ void kernel_main(void)
         create_process("init");
         // init_external_interrupts();
 
-
         struct task *producerProc = create_process("producer");
-        if (!producerProc) panic("failed to create producer");
+        if (!producerProc)
+            panic("failed to create producer");
 
         struct task *consumerProc = create_process("consumer");
-        if (!consumerProc) panic("failed to create consumer");
+        if (!consumerProc)
+            panic("failed to create consumer");
 
         // Map the same physical page at DIFFERENT virtual addresses
         map_shared_buffer_to_process(producerProc, (vaddr)PRODUCER_VA);
         map_shared_buffer_to_process(consumerProc, (vaddr)CONSUMER_VA);
-
 
         __sync_synchronize();
         ready = 1;

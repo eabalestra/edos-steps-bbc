@@ -77,7 +77,7 @@ int sys_semcreate(struct task *task)
 
     if (result == 0)
     {
-        // TODO: por que hace esto? La current task lo crea al semaforo pero no neccesariamente lo usa?
+        // TODO: por que hace esto? La current task lo crea al semaforo pero no neccesariamente lo usa? (delf)
         // Add to process semaphore table
         if (add_proc_semaphore(task, id) != 0)
         {
@@ -148,7 +148,6 @@ int sys_semclose(struct task *task)
         return -1;
     }
 
-    // Por que esto aca? (delfi)
     // Remove from process table
     remove_proc_semaphore(task, id);
 

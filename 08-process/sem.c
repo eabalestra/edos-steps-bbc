@@ -75,7 +75,7 @@ int semcreate(int id, int init_value)
     struct semaphore *sem = NULL;
 
     // Check if semaphore with this ID already exists
-    if (semget(id) != NULL)
+    if (semget(id) != -1)
     {
         release(&sem_table_lock);
         return -1; // Semaphore already exists
@@ -96,6 +96,7 @@ int semcreate(int id, int init_value)
             return 0; // Success
         }
     }
+
     release(&sem_table_lock);
     return -1; // No free slots
 }
@@ -111,12 +112,12 @@ int semget(int id)
         if (semaphores[i].used && semaphores[i].id == id)
         {
             release(&sem_table_lock);
-            return i;
+            return i; // Found
         }
     }
 
     release(&sem_table_lock);
-    return NULL;
+    return -1; // Not found
 }
 
 // If the semaphore's value is zero, the process is supsended.
@@ -136,7 +137,7 @@ int semwait(int id)
     // TODO: posible bug (Chino)
     sem->value--;
 
-    // PARA MI ESTO SE TIENE QUE HACER en algun lado (delfi)
+    // PARA MI ESTO SE TIENE QUE HACER aca (delfi)
     // struct task *task = current_task();
     // task->current_sems[task->sem_count] = &sem->id;
     // task->sem_count++;
@@ -151,12 +152,30 @@ int semwait(int id)
 // Increments the value of the semaphore and wakes up the sleeping processes.
 int semsignal(int id)
 {
+
+    // (delfi) no habria que chequear tambien si el semaforo lo tiene adquirido el proc que le quiere hacer el semsignal?
+    // si lo tiene entonces puede hacer el semsignal, sino no va a poder.
+
     int sem_index = semget(id);
+
+    if (sem_index == -1)
+    {
+        return -1; // Semaphore not found
+    }
+
     struct semaphore *sem = &(semaphores[sem_index]);
 
     acquire(&sem->lock);
 
-    sem->value++;
+    /*
+    int init_value = value
+    if (sem->value >= init_value)
+    {
+        suspend(&sem->id, &sem->lock);
+    }
+    */
+
+    sem->value++; // no hay que chequear el limite? que no se pase de N (delfi)
 
     wakeup(&sem->id);
 

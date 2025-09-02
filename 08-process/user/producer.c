@@ -17,9 +17,9 @@ int gen_value(void)
 void add_to_buffer(int value)
 {
     // Write value directly to shared memory address
-    semwait(MUTEX);
+    // semwait(MUTEX);
     *SHARED_BUFFER = value;
-    semsignal(MUTEX);
+    // semsignal(MUTEX);
 }
 
 int main(void)
@@ -27,19 +27,19 @@ int main(void)
     printf("Producer process started with PID %d\n", getpid());
 
     // Create semaphores
-    semcreate(EMPTY, 1); // empty semaphore: counts how many slots are available for producer to write (only one slot available in total).
-    semcreate(FULL, 0);  // full semaphore: counts how many slots are filled for consumer to read.
-    semcreate(MUTEX, 1); // mutex semaphore: ensures mutual exclusion when accessing the shared buffer.
+    // semcreate(EMPTY, 1); // empty semaphore: counts how many slots are available for producer to write (only one slot available in total).
+    // semcreate(FULL, 0);  // full semaphore: counts how many slots are filled for consumer to read.
+    // semcreate(MUTEX, 1); // mutex semaphore: ensures mutual exclusion when accessing the shared buffer.
 
     while (true)
     {
         int value = gen_value();
 
         // Enter critical section
-        semwait(FULL);
+        // semwait(FULL);
         add_to_buffer(value);
         printf("Producer wrote: %d\n", value);
-        semsignal(EMPTY);
+        // semsignal(EMPTY);
 
         // Small delay
         for (int i = 0; i < 2000000; i++)
