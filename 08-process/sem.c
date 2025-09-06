@@ -5,7 +5,7 @@
 
 // Global semaphore table
 struct semaphore semaphores[NSEM];
-spinlock sem_table_lock = {0};
+spinlock sem_table_lock = 0;
 
 // Initialize semaphore system
 void init_semaphores(void)
@@ -20,85 +20,68 @@ void init_semaphores(void)
     }
 }
 
-// Check if process has access to semaphore
-bool proc_has_semaphore(struct task *task, int sem_id)
-{
-    for (int i = 0; i < NSEM_PROC; i++)
-    {
-        if (task->current_sems[i].used && task->current_sems[i].sem_id == sem_id)
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
-// Add process semaphore reference
-int add_proc_semaphore(struct task *task, int sem_id)
-{
-    // Find free slot in process semaphore table
-    for (int i = 0; i < NSEM_PROC; i++)
-    {
-        if (!task->current_sems[i].used)
-        {
-            task->current_sems[i].sem_id = sem_id;
-            task->current_sems[i].used = true;
-            return 0;
-        }
-    }
-    return -1; // No free slots
-}
-
-// Remove process semaphore reference
-void remove_proc_semaphore(struct task *task, int sem_id)
-{
-    for (int i = 0; i < NSEM_PROC; i++)
-    {
-        if (task->current_sems[i].used && task->current_sems[i].sem_id == sem_id)
-        {
-            task->current_sems[i].used = false;
-            task->current_sems[i].sem_id = -1;
-            return;
-        }
-    }
-}
-
 //=============================================================================
 // Functions for syscalls implementation
 //=============================================================================
 
-// Allocate a new semaphore
-int semcreate(int id, int init_value)
+// Returns the index of the first unused semaphore in the global semaphore table.
+int findFreeSlotSemaphore()
 {
-    acquire(&sem_table_lock);
-
-    struct semaphore *sem = NULL;
-
-    // Check if semaphore with this ID already exists
-    if (semget(id) != -1)
-    {
-        release(&sem_table_lock);
-        return -1; // Semaphore already exists
-    }
-
-    // Find free slot
     for (int i = 0; i < NSEM; i++)
     {
         if (!semaphores[i].used)
         {
-            sem = &(semaphores[i]);
-            sem->id = id;
-            sem->value = init_value;
-            sem->used = true;
-            sem->ref_count = 0;
-            sem->lock = (spinlock){0};
-            release(&sem_table_lock);
-            return 0; // Success
+            return i;
         }
+    }
+    return -1;
+}
+
+int semcreate(int id, int init_value)
+{
+    // Check if semaphore with this ID already exists
+    if (semget(id) != -1)
+    {
+        return -1; // Semaphore already exists
+    }
+
+    acquire(&sem_table_lock);
+
+    struct semaphore *sem = NULL;
+
+    int freeSemaphoreSlot = findFreeSlotSemaphore();
+    
+    struct task *task = current_task();
+    int semaphoreDescriptor = findFreeSemaphoreDescriptor(task);
+
+    if (semaphoreDescriptor != -1 && freeSemaphoreSlot != -1) {
+        sem = &(semaphores[freeSemaphoreSlot]);
+        sem->id = id;
+        sem->value = init_value;
+        sem->used = true;
+        sem->ref_count = 1;
+        sem->lock = (spinlock){0};
+   
+        task->current_sems[semaphoreDescriptor] = &sem;
+    } else {
+        release(&sem_table_lock);
+        return -1; 
     }
 
     release(&sem_table_lock);
-    return -1; // No free slots
+
+    return semaphoreDescriptor; // Return the file descriptor (index) of the process semaphore table
+}
+
+// Returns the index of the first available slot in the task's semaphore table.
+// Returns -1 if no free slot is found.
+int findFreeSemaphoreDescriptor(struct task *task) {
+    for (int i = 0; i < NSEM_PROC; i++) {
+        if (task->current_sems[i] == NULL) {
+            return i;
+        }
+    }
+    return -1;
 }
 
 // Find semaphore by ID
@@ -120,94 +103,17 @@ int semget(int id)
     return -1; // Not found
 }
 
-// If the semaphore's value is zero, the process is supsended.
-// Ohterwise, the value of the semaphore is decreased.
-int semwait(int id)
+int semwait(id)
 {
-    int sem_index = semget(id);
-    struct semaphore *sem = &(semaphores[sem_index]);
-
-    acquire(&sem->lock);
-
-    if (sem->value <= 0)
-    {
-        suspend(&sem->id, &sem->lock);
-    }
-
-    // TODO: posible bug (Chino)
-    sem->value--;
-
-    // PARA MI ESTO SE TIENE QUE HACER aca (delfi)
-    // struct task *task = current_task();
-    // task->current_sems[task->sem_count] = &sem->id;
-    // task->sem_count++;
-
-    // no haria falta tambien actualizar el ref_count?
-
-    release(&sem->lock);
-
     return 0;
 }
 
-// Increments the value of the semaphore and wakes up the sleeping processes.
-int semsignal(int id)
-{
-
-    // (delfi) no habria que chequear tambien si el semaforo lo tiene adquirido el proc que le quiere hacer el semsignal?
-    // si lo tiene entonces puede hacer el semsignal, sino no va a poder.
-
-    int sem_index = semget(id);
-
-    if (sem_index == -1)
-    {
-        return -1; // Semaphore not found
-    }
-
-    struct semaphore *sem = &(semaphores[sem_index]);
-
-    acquire(&sem->lock);
-
-    /*
-    int init_value = value
-    if (sem->value >= init_value)
-    {
-        suspend(&sem->id, &sem->lock);
-    }
-    */
-
-    sem->value++; // no hay que chequear el limite? que no se pase de N (delfi)
-
-    wakeup(&sem->id);
-
-    // PARA MI ESTO SE TIENE QUE HACER (delfi)
-    // struct task *task = current_task();
-    // task->sem_count--;
-
-    release(&sem->lock);
-
-    return 0;
-}
-
-// Releases a semaphore if no processes are using it
 int semclose(int id)
 {
-    acquire(&sem_table_lock);
+    return 0;
+}
 
-    int sem_index = semget(id);
-    struct semaphore *sem = &(semaphores[sem_index]);
-
-    if (sem && sem->ref_count > 0)
-    {
-        sem->ref_count--;
-        if (sem->ref_count == 0)
-        {
-            sem->used = false;
-            sem->id = -1;
-            sem->value = 0;
-        }
-        release(&sem_table_lock);
-        return 0; // Success
-    }
-    release(&sem_table_lock);
-    return -1; // Semaphore not found or already freed
+int semsignal(int id)
+{
+    return 0;
 }

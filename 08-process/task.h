@@ -25,23 +25,22 @@
 
 // task/process control block
 struct task {
-    uint              tid;                 // Task id
-    uint              pid;                 // Process id
-    char              name[TASK_NAME_LEN]; // task name
-    int               state;               // Task state
-    struct task       *parent;             // Parent task (null for init)
-    bool              killed;              // Task was killed?
-    int               exit_code;           // exit code for terminated tasks
-    struct context    ctx;                 // Saved context
-    int               ticks;               // last cpu burst
-    uint8*            kstack;              // Kernel-mode stack
-    uint64            sleep_ticks;         // Waiting for ticks
-    int               cpu_id;              // CPU in which this task is running
-    void*             wait_condition;      // Waiting condition
-    pte*              pgtbl;               // Page table
-    spinlock          lock;                // lock for task
-    struct proc_sem   current_sems[NSEM_PROC];  // Current semaphores used by this process
-    int               sem_count;                // current number of semaphores used 
+    uint                tid;                 // Task id
+    uint                pid;                 // Process id
+    char                name[TASK_NAME_LEN]; // task name
+    int                 state;               // Task state
+    struct task         *parent;             // Parent task (null for init)
+    bool                killed;              // Task was killed?
+    int                 exit_code;           // exit code for terminated tasks
+    struct context      ctx;                 // Saved context
+    int                 ticks;               // last cpu burst
+    uint8*              kstack;              // Kernel-mode stack
+    uint64              sleep_ticks;         // Waiting for ticks
+    int                 cpu_id;              // CPU in which this task is running
+    void*               wait_condition;      // Waiting condition
+    pte*                pgtbl;               // Page table
+    spinlock            lock;                // lock for task
+    struct semaphore*   current_sems[NSEM_PROC];  // current semaphores used by this process
 };
 
 // CPU state

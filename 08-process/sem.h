@@ -17,12 +17,6 @@ struct semaphore
     spinlock lock; // Lock for atomic operations
 };
 
-struct proc_sem
-{
-    int sem_id; // Semaphore ID
-    int used;   // Is this slot used?
-};
-
 // Global semaphore table
 extern struct semaphore semaphores[NSEM];
 extern spinlock sem_table_lock;
