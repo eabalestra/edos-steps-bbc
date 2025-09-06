@@ -78,3 +78,10 @@ semclose:
     li a7, 10
     ecall
     ret
+
+# int semopen(int id)
+.global semopen
+semopen:
+    li a7, 11
+    ecall
+    ret

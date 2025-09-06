@@ -63,7 +63,6 @@ int sys_semcreate(struct task *task)
 {
     struct trap_frame *tf = task_trap_frame_address(task);
 
-    // TODO: chequear si esto esta completamente bien?
     int id = (int)syscall_arg(tf, 0);
     int init_value = (int)syscall_arg(tf, 1);
 
@@ -73,37 +72,7 @@ int sys_semcreate(struct task *task)
     }
 
     // Create the semaphore
-    int result = semcreate(id, init_value);
-
-    if (result == 0)
-    {
-        // TODO: por que hace esto? La current task lo crea al semaforo pero no neccesariamente lo usa? (delf)
-        // Add to process semaphore table
-        if (add_proc_semaphore(task, id) != 0)
-        {
-            // free_semaphore(id);
-            return -1;
-        }
-    }
-    return result;
-}
-
-// TODO: ask if this is correct, because we don't know how this works!
-int sys_semget(struct task *task)
-{
-    struct trap_frame *tf = task_trap_frame_address(task);
-    int id = (int)syscall_arg(tf, 0);
-
-    acquire(&sem_table_lock);
-    struct semaphore *sem = semget(id);
-
-    if (sem)
-    {
-        return 0; // Semaphore found
-    }
-
-    release(&sem_table_lock);
-    return -1; // Semaphore not found
+    return semcreate(id, init_value);
 }
 
 // sem_wait(int id)
@@ -112,49 +81,61 @@ int sys_semwait(struct task *task)
     struct trap_frame *tf = task_trap_frame_address(task);
     int id = (int)syscall_arg(tf, 0); // Get semaphore ID
 
-    // Check if process has access to this semaphore
-    if (proc_has_semaphore(task, id))
-    {
-        return -1;
-    }
-
     return semwait(id);
+}
+
+int sys_semopen(struct task *task)
+{
+    struct trap_frame *tf = task_trap_frame_address(task);
+    int id = (int)syscall_arg(tf, 0);
+
+    return semopen(id);
 }
 
 // int sem_signal(int id)
 int sys_semsignal(struct task *task)
 {
-    struct trap_frame *tf = task_trap_frame_address(task);
-    int id = (int)syscall_arg(tf, 0); // Get semaphore ID
+    // struct trap_frame *tf = task_trap_frame_address(task);
+    // int id = (int)syscall_arg(tf, 0); // Get semaphore ID
 
-    // Check if process has access to this semaphore
-    if (!proc_has_semaphore(task, id))
-    {
-        return -1;
-    }
+    // // Check if process has access to this semaphore
+    // if (!proc_has_semaphore(task, id))
+    // {
+    //     return -1;
+    // }
 
-    return semsignal(id);
+    // return semsignal(id);
+    return 0;
 }
 
 // sem_close(int id)
 int sys_semclose(struct task *task)
 {
+    // struct trap_frame *tf = task_trap_frame_address(task);
+    // int id = (int)syscall_arg(tf, 0);
+
+    // // Check if process has access to this semaphore
+    // if (!proc_has_semaphore(task, id))
+    // {
+    //     return -1;
+    // }
+
+    // // Remove from process table
+    // remove_proc_semaphore(task, id);
+
+    // // Decrease reference count
+    // semclose(id);
+
+    // return 0;
+    return 0;
+}
+
+int sys_semget(struct task *task)
+{
     struct trap_frame *tf = task_trap_frame_address(task);
     int id = (int)syscall_arg(tf, 0);
 
-    // Check if process has access to this semaphore
-    if (!proc_has_semaphore(task, id))
-    {
-        return -1;
-    }
-
-    // Remove from process table
-    remove_proc_semaphore(task, id);
-
-    // Decrease reference count
-    semclose(id);
-
-    return 0;
+    return semget(id);
 }
 
 //=============================================================================
@@ -175,7 +156,9 @@ static syscall_f syscalls_table[SYSCALLS] = {
     sys_semget,
     sys_semwait,
     sys_semsignal,
-    sys_semclose};
+    sys_semclose,
+    sys_semopen
+};
 
 // Syscall dispatcher. Call the syscall and store result in trap frame
 void syscall(struct task *task)

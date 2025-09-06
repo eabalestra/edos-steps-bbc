@@ -28,6 +28,7 @@ void init_semaphores(void);
 bool proc_has_semaphore(struct task *task, int sem_id);
 void remove_proc_semaphore(struct task *task, int sem_id);
 int add_proc_semaphore(struct task *task, int sem_id);
+int semopen(int id);
 
 // System call interface for semaphore operations
 int semcreate(int id, int init_value);
@@ -35,3 +36,5 @@ int semget(int id);
 int semwait(int id);
 int semsignal(int id);
 int semclose(int id);
+
+int semopen(int id);

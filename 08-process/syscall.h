@@ -13,5 +13,6 @@
 #define SYS_SEMWAIT             8
 #define SYS_SEMSIGNAL           9
 #define SYS_SEMCLOSE            10
+#define SYS_SEMOPEN             11
 
-#define SYSCALLS                11
+#define SYSCALLS                12

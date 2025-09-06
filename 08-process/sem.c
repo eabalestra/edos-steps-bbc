@@ -6,6 +6,7 @@
 // Global semaphore table
 struct semaphore semaphores[NSEM];
 spinlock sem_table_lock = 0;
+struct task *currentTask = NULL;
 
 // Initialize semaphore system
 void init_semaphores(void)
@@ -50,34 +51,40 @@ int semcreate(int id, int init_value)
     struct semaphore *sem = NULL;
 
     int freeSemaphoreSlot = findFreeSlotSemaphore();
-    
-    struct task *task = current_task();
-    int semaphoreDescriptor = findFreeSemaphoreDescriptor(task);
 
-    if (semaphoreDescriptor != -1 && freeSemaphoreSlot != -1) {
+    currentTask = current_task();
+    int semaphoreDescriptor = findFreeSemaphoreDescriptor(currentTask);
+
+    if (semaphoreDescriptor != -1 && freeSemaphoreSlot != -1)
+    {
         sem = &(semaphores[freeSemaphoreSlot]);
         sem->id = id;
         sem->value = init_value;
         sem->used = true;
         sem->ref_count = 1;
         sem->lock = (spinlock){0};
-   
-        task->current_sems[semaphoreDescriptor] = &sem;
-    } else {
+
+        currentTask->current_sems[semaphoreDescriptor] = &sem;
+    }
+    else
+    {
         release(&sem_table_lock);
-        return -1; 
+        return -1;
     }
 
     release(&sem_table_lock);
 
-    return semaphoreDescriptor; // Return the file descriptor (index) of the process semaphore table
+    return semaphoreDescriptor; // Return the descriptor (index) of the process semaphore table
 }
 
 // Returns the index of the first available slot in the task's semaphore table.
 // Returns -1 if no free slot is found.
-int findFreeSemaphoreDescriptor(struct task *task) {
-    for (int i = 0; i < NSEM_PROC; i++) {
-        if (task->current_sems[i] == NULL) {
+int findFreeSemaphoreDescriptor(struct task *task)
+{
+    for (int i = 0; i < NSEM_PROC; i++)
+    {
+        if (task->current_sems[i] == NULL)
+        {
             return i;
         }
     }
@@ -103,8 +110,24 @@ int semget(int id)
     return -1; // Not found
 }
 
-int semwait(id)
+// Given the semaphore's descriptor, if the semaphore's value is zero,
+// the process is supsended. Ohterwise, the value of the semaphore is decreased.
+int semwait(int id)
 {
+    currentTask = current_task();
+
+    struct semaphore *sem = currentTask->current_sems[id];
+
+    acquire(&sem->lock);
+
+    if (sem->value <= 0) // TODO: if or while?
+    {
+        suspend(&sem->id, &sem->lock);
+    }
+
+    sem->value--;
+
+    release(&sem->lock);
     return 0;
 }
 
@@ -116,4 +139,54 @@ int semclose(int id)
 int semsignal(int id)
 {
     return 0;
+}
+
+// Opens an existing semaphore with the given ID for the current task.
+// If the task doesn't have the semaphore, it finds a free slot in the task's semaphore table,
+// and adds it to it.
+int semopen(int id)
+{
+    int sem_index = semget(id);
+    
+    acquire(&sem_table_lock);
+    int check = processHasSemaphore(sem_index);
+
+    if (sem_index == -1 || check != -1)
+    {
+        return -1;
+    }
+    
+    struct semaphore *sem = &(semaphores[sem_index]);
+
+    currentTask = current_task();
+    int semaphoreDescriptor = findFreeSemaphoreDescriptor(currentTask);    
+
+    if (semaphoreDescriptor != -1)
+    {
+        sem->ref_count++;
+        currentTask->current_sems[semaphoreDescriptor] = &sem;
+    }
+    else
+    {
+        release(&sem_table_lock);
+        return -1;
+    }
+
+    release(&sem_table_lock);
+
+    return semaphoreDescriptor;
+}
+
+int processHasSemaphore(int sem_index)
+{
+    currentTask = current_task();
+    
+    for (int i = 0; i < NSEM_PROC; i++)
+    {
+        if (currentTask->current_sems[i] == &semaphores[sem_index])
+        {
+            return 0;
+        }
+    }
+    return -1;
 }

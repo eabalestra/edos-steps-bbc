@@ -23,21 +23,31 @@ int main(void)
 {
     printf("Consumer process started with PID %d\n", getpid());
 
+    int fullSem = semopen(FULL);
+    int emptySem = semopen(EMPTY);
+    int mutexSem = semopen(MUTEX);
+
+    printf("Semaphores open in CONSUMER: EMPTY=%d, FULL=%d, MUTEX=%d\n", emptySem, fullSem, mutexSem);
+    printf("Semaphores open in CONSUMER: EMPTY=%d, FULL=%d, MUTEX=%d\n", emptySem, fullSem, mutexSem);
+    printf("Semaphores open in CONSUMER: EMPTY=%d, FULL=%d, MUTEX=%d\n", emptySem, fullSem, mutexSem);
+    printf("Semaphores open in CONSUMER: EMPTY=%d, FULL=%d, MUTEX=%d\n", emptySem, fullSem, mutexSem);
+    printf("Semaphores open in CONSUMER: EMPTY=%d, FULL=%d, MUTEX=%d\n", emptySem, fullSem, mutexSem);
+
     // Just use the same IDs created by producer
     // (no need to call semcreate again, just semwait/semsignal)
     while (true)
     {
-        //semwait(EMPTY);
+        semwait(emptySem);
 
         // Enter critical section
-        //semwait(MUTEX);
+        // semwait(mutexSem);
         int value = get_from_buffer();
-        //semsignal(MUTEX);
+        // semsignal(mutexSem);
 
         printf("Consumer read: %d\n", value);
 
         // Signal that buffer is empty again
-        //semsignal(FULL);
+        //semsignal(fullSem);
 
         // Small delay
         for (int i = 0; i < 2000000; i++)
