@@ -52,7 +52,7 @@ void kernel_main(void)
         struct task *producerProc = create_process("producer");
         if (!producerProc)
             panic("failed to create producer");
-
+        
         struct task *consumerProc = create_process("consumer");
         if (!consumerProc)
             panic("failed to create consumer");

@@ -64,7 +64,8 @@ int semcreate(int id, int init_value)
         sem->ref_count = 1;
         sem->lock = (spinlock){0};
 
-        currentTask->current_sems[semaphoreDescriptor] = &sem;
+        // TODO: AGUSTIN
+        currentTask->current_sems[semaphoreDescriptor] = sem;
     }
     else
     {
@@ -112,31 +113,77 @@ int semget(int id)
 
 // Given the semaphore's descriptor, if the semaphore's value is zero,
 // the process is supsended. Ohterwise, the value of the semaphore is decreased.
+// id is the descriptor of the semaphore
 int semwait(int id)
 {
     currentTask = current_task();
 
+    if (processHasSemaphore(id) == -1) {
+        return -1; // Process hasn't opened the semaphore yet
+    }
+
     struct semaphore *sem = currentTask->current_sems[id];
+    
+    printf("SEMWAIT! %d\n", sem->id);
+    printf("SEMWAIT! %d\n", sem->id);
+    printf("SEMWAIT! %d\n", sem->id);
+    printf("SEMWAIT! %d\n", sem->id);
 
     acquire(&sem->lock);
 
-    if (sem->value <= 0) // TODO: if or while?
+    while (sem->value <= 0)
     {
         suspend(&sem->id, &sem->lock);
     }
 
+    // printf("SEM->VALUE: %d\n", sem->value);
+    // printf("SEM->VALUE: %d\n", sem->value);
+    // printf("SEM->VALUE: %d\n", sem->value);
+    // printf("SEM->VALUE: %d\n", sem->value);
     sem->value--;
 
     release(&sem->lock);
     return 0;
 }
 
-int semclose(int id)
+// Increments (signals) the value of a semaphore and wakes up any process
+// that might be waiting on it.
+// id is the descriptor of the semaphore
+int semsignal(int id)
 {
+    printf("SEMSIGNAL!\n");
+    printf("SEMSIGNAL!\n");
+    printf("SEMSIGNAL!\n");
+    printf("SEMSIGNAL!\n");
+    
+    currentTask = current_task();
+
+    if (processHasSemaphore(id) == -1) {
+        printf("ACA EN EL SEMSIGNAL??\n");
+        printf("ACA EN EL SEMSIGNAL??\n");
+        printf("ACA EN EL SEMSIGNAL??\n");
+        printf("ACA EN EL SEMSIGNAL??\n");
+        return -1; // Process hasn't opened the semaphore yet
+    }
+
+    struct semaphore *sem = currentTask->current_sems[id];
+
+    printf("SEMSIGNAL! %d\n", sem->id);
+    printf("SEMSIGNAL! %d\n", sem->id);
+    printf("SEMSIGNAL! %d\n", sem->id);
+    printf("SEMSIGNAL! %d\n", sem->id);
+
+    acquire(&sem->lock);
+    
+    sem->value++; 
+    wakeup(&sem->id);
+
+    release(&sem->lock);
+
     return 0;
 }
 
-int semsignal(int id)
+int semclose(int id)
 {
     return 0;
 }
@@ -147,24 +194,24 @@ int semsignal(int id)
 int semopen(int id)
 {
     int sem_index = semget(id);
-    
-    acquire(&sem_table_lock);
+
     int check = processHasSemaphore(sem_index);
 
     if (sem_index == -1 || check != -1)
     {
         return -1;
     }
-    
+
+    acquire(&sem_table_lock);
     struct semaphore *sem = &(semaphores[sem_index]);
 
     currentTask = current_task();
-    int semaphoreDescriptor = findFreeSemaphoreDescriptor(currentTask);    
+    int semaphoreDescriptor = findFreeSemaphoreDescriptor(currentTask);
 
     if (semaphoreDescriptor != -1)
     {
         sem->ref_count++;
-        currentTask->current_sems[semaphoreDescriptor] = &sem;
+        currentTask->current_sems[semaphoreDescriptor] = sem;
     }
     else
     {
@@ -177,16 +224,21 @@ int semopen(int id)
     return semaphoreDescriptor;
 }
 
+
+// Checks if the current process has a semaphore with descriptor sem_index
 int processHasSemaphore(int sem_index)
 {
     currentTask = current_task();
-    
+
+    acquire(&sem_table_lock);
     for (int i = 0; i < NSEM_PROC; i++)
     {
-        if (currentTask->current_sems[i] == &semaphores[sem_index])
+        if (currentTask->current_sems[i] == &semaphores[sem_index]) //TODO: 
         {
+            release(&sem_table_lock);
             return 0;
         }
     }
+    release(&sem_table_lock);
     return -1;
 }

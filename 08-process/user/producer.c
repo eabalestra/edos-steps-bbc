@@ -26,8 +26,8 @@ int main(void)
 
     // Create semaphores
 
-    int emptySem = semcreate(EMPTY, 1); // empty semaphore: counts how many slots are available for producer to write (only one slot available in total).
-    int fullSem = semcreate(FULL, 0);   // full semaphore: counts how many slots are filled for consumer to read.
+    int emptySem = semcreate(EMPTY, 0); // empty semaphore: counts how many slots are available for producer to write (only one slot available in total).
+    int fullSem = semcreate(FULL, 1);   // full semaphore: counts how many slots are filled for consumer to read.
     int mutexSem = semcreate(MUTEX, 1); // mutex semaphore: ensures mutual exclusion when accessing the shared buffer.
 
    /*  printf("Semaphores created: EMPTY=%d, FULL=%d, MUTEX=%d\n", emptySem, fullSem, mutexSem);
@@ -45,12 +45,12 @@ int main(void)
         // Enter critical section
         semwait(fullSem);
 
-        // semwait(mutexSem);
+        semwait(mutexSem);
         add_to_buffer(value);
-        // semsignal(mutexSem);
+        semsignal(mutexSem);
 
         printf("Producer wrote: %d\n", value);
-        // semsignal(emptySem);
+        semsignal(emptySem);
 
         // Small delay
         for (int i = 0; i < 2000000; i++)
