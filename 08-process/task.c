@@ -182,7 +182,7 @@ void suspend(void *condition, spinlock *lk)
     acquire(&task->lock);
 
     // release lk to avoid deadlock
-    release(lk);
+    release(lk);    
 
     task->wait_condition = condition;
     task->state = WAITING;

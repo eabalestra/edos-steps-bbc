@@ -23,15 +23,15 @@ int main(void)
 {
     printf("Consumer process started with PID %d\n", getpid());
 
-    int fullSem = semopen(FULL);
     int emptySem = semopen(EMPTY);
+    int fullSem = semopen(FULL);
     int mutexSem = semopen(MUTEX);
 
-    printf("Semaphores open in CONSUMER: EMPTY=%d, FULL=%d, MUTEX=%d\n", emptySem, fullSem, mutexSem);
-    printf("Semaphores open in CONSUMER: EMPTY=%d, FULL=%d, MUTEX=%d\n", emptySem, fullSem, mutexSem);
-    printf("Semaphores open in CONSUMER: EMPTY=%d, FULL=%d, MUTEX=%d\n", emptySem, fullSem, mutexSem);
-    printf("Semaphores open in CONSUMER: EMPTY=%d, FULL=%d, MUTEX=%d\n", emptySem, fullSem, mutexSem);
-    printf("Semaphores open in CONSUMER: EMPTY=%d, FULL=%d, MUTEX=%d\n", emptySem, fullSem, mutexSem);
+    // printf("Semaphores open in CONSUMER: EMPTY=%d, FULL=%d, MUTEX=%d\n", emptySem, fullSem, mutexSem);
+    // printf("Semaphores open in CONSUMER: EMPTY=%d, FULL=%d, MUTEX=%d\n", emptySem, fullSem, mutexSem);
+    // printf("Semaphores open in CONSUMER: EMPTY=%d, FULL=%d, MUTEX=%d\n", emptySem, fullSem, mutexSem);
+    // printf("Semaphores open in CONSUMER: EMPTY=%d, FULL=%d, MUTEX=%d\n", emptySem, fullSem, mutexSem);
+    // printf("Semaphores open in CONSUMER: EMPTY=%d, FULL=%d, MUTEX=%d\n", emptySem, fullSem, mutexSem);
 
     // Just use the same IDs created by producer
     // (no need to call semcreate again, just semwait/semsignal)

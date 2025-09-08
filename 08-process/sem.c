@@ -118,30 +118,26 @@ int semwait(int id)
 {
     currentTask = current_task();
 
-    if (processHasSemaphore(id) == -1) {
+    if (id < 0 || id >= NSEM_PROC) return -1;
+
+    if (currentTask->current_sems[id] == NULL) {
         return -1; // Process hasn't opened the semaphore yet
     }
 
     struct semaphore *sem = currentTask->current_sems[id];
-    
-    printf("SEMWAIT! %d\n", sem->id);
-    printf("SEMWAIT! %d\n", sem->id);
-    printf("SEMWAIT! %d\n", sem->id);
-    printf("SEMWAIT! %d\n", sem->id);
 
     acquire(&sem->lock);
 
     while (sem->value <= 0)
     {
+        printf("---SEMWAIT: task %s waiting on sem (id=%d)\n", currentTask->name, sem->id);
+        
         suspend(&sem->id, &sem->lock);
     }
 
-    // printf("SEM->VALUE: %d\n", sem->value);
-    // printf("SEM->VALUE: %d\n", sem->value);
-    // printf("SEM->VALUE: %d\n", sem->value);
-    // printf("SEM->VALUE: %d\n", sem->value);
     sem->value--;
 
+    printf("---SEMWAIT: task %s got sem %d new value=%d\n", currentTask->name, sem->id, sem->value);
     release(&sem->lock);
     return 0;
 }
@@ -151,18 +147,16 @@ int semwait(int id)
 // id is the descriptor of the semaphore
 int semsignal(int id)
 {
-    printf("SEMSIGNAL!\n");
-    printf("SEMSIGNAL!\n");
-    printf("SEMSIGNAL!\n");
-    printf("SEMSIGNAL!\n");
+    printf("---SEMSIGNAL!\n");
+    printf("---SEMSIGNAL!\n");
+    printf("---SEMSIGNAL!\n");
+    printf("---SEMSIGNAL!\n");
     
     currentTask = current_task();
 
-    if (processHasSemaphore(id) == -1) {
-        printf("ACA EN EL SEMSIGNAL??\n");
-        printf("ACA EN EL SEMSIGNAL??\n");
-        printf("ACA EN EL SEMSIGNAL??\n");
-        printf("ACA EN EL SEMSIGNAL??\n");
+    if (id < 0 || id >= NSEM_PROC) return -1;
+
+    if (currentTask->current_sems[id] == NULL) {
         return -1; // Process hasn't opened the semaphore yet
     }
 
@@ -174,8 +168,10 @@ int semsignal(int id)
     printf("SEMSIGNAL! %d\n", sem->id);
 
     acquire(&sem->lock);
-    
     sem->value++; 
+
+    printf("----SEMSIGNAL: task %s signaled on sem (id=%d)\n", currentTask->name, sem->id);
+
     wakeup(&sem->id);
 
     release(&sem->lock);
@@ -194,12 +190,12 @@ int semclose(int id)
 int semopen(int id)
 {
     int sem_index = semget(id);
+    if (sem_index == -1) {
+        return -1;  // sempahore does not exist
+    }
 
-    int check = processHasSemaphore(sem_index);
-
-    if (sem_index == -1 || check != -1)
-    {
-        return -1;
+    if (processHasSemaphore(sem_index) == 0) {
+        return -1;  // the process has already opened that semaphore
     }
 
     acquire(&sem_table_lock);
@@ -225,15 +221,21 @@ int semopen(int id)
 }
 
 
-// Checks if the current process has a semaphore with descriptor sem_index
+// Checks if the current process has a semaphore with index sem_index
+// Se fija si el proceso tiene un semaforo en su tabla local. Siendo este semaforo
+// el que se encuentra en el indice sem_index en la tabla global semaphores.
 int processHasSemaphore(int sem_index)
 {
+    if (sem_index < 0 || sem_index >= NSEM) {
+        return -1; // invalid index
+    }
+
     currentTask = current_task();
 
     acquire(&sem_table_lock);
     for (int i = 0; i < NSEM_PROC; i++)
     {
-        if (currentTask->current_sems[i] == &semaphores[sem_index]) //TODO: 
+        if (currentTask->current_sems[i] == &semaphores[sem_index])
         {
             release(&sem_table_lock);
             return 0;
