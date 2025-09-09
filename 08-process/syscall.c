@@ -92,27 +92,20 @@ int sys_semopen(struct task *task)
     return semopen(id);
 }
 
-// int sem_signal(int id)
+
 int sys_semsignal(struct task *task)
 {
-    // struct trap_frame *tf = task_trap_frame_address(task);
-    // int id = (int)syscall_arg(tf, 0); // Get semaphore ID
+    struct trap_frame *tf = task_trap_frame_address(task);
+    int id = (int)syscall_arg(tf, 0); // Get semaphore ID
 
-    // // Check if process has access to this semaphore
-    // if (!proc_has_semaphore(task, id))
-    // {
-    //     return -1;
-    // }
-
-    // return semsignal(id);
-    return 0;
+    return semsignal(id);
 }
 
 // sem_close(int id)
 int sys_semclose(struct task *task)
 {
-    // struct trap_frame *tf = task_trap_frame_address(task);
-    // int id = (int)syscall_arg(tf, 0);
+    struct trap_frame *tf = task_trap_frame_address(task);
+    int id = (int)syscall_arg(tf, 0);
 
     // // Check if process has access to this semaphore
     // if (!proc_has_semaphore(task, id))
@@ -123,10 +116,7 @@ int sys_semclose(struct task *task)
     // // Remove from process table
     // remove_proc_semaphore(task, id);
 
-    // // Decrease reference count
-    // semclose(id);
-
-    // return 0;
+    semclose(id);
     return 0;
 }
 

@@ -38,21 +38,14 @@ int main(void)
     while (true)
     {
         semwait(emptySem);
-        
-        printf("ESTO SE DEBERIA ejecutarrrrrrrrrr\n");
-        printf("ESTO SE DEBERIA ejecutarrrrrrrrrr\n");
-        printf("ESTO SE DEBERIA ejecutarrrrrrrrrr\n");
-        printf("ESTO SE DEBERIA ejecutarrrrrrrrrr\n");
+
         // Enter critical section
         semwait(mutexSem);
         int value = get_from_buffer();
         semsignal(mutexSem);
 
         printf("Consumer read: %d\n", value);
-        printf("Consumer read: %d\n", value);
-        printf("Consumer read: %d\n", value);
-        printf("Consumer read: %d\n", value);
-
+        
         // Signal that buffer is empty again
         semsignal(fullSem);
 

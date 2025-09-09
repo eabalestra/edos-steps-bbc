@@ -130,14 +130,11 @@ int semwait(int id)
 
     while (sem->value <= 0)
     {
-        printf("---SEMWAIT: task %s waiting on sem (id=%d)\n", currentTask->name, sem->id);
-        
         suspend(&sem->id, &sem->lock);
     }
 
     sem->value--;
 
-    printf("---SEMWAIT: task %s got sem %d new value=%d\n", currentTask->name, sem->id, sem->value);
     release(&sem->lock);
     return 0;
 }
@@ -146,12 +143,7 @@ int semwait(int id)
 // that might be waiting on it.
 // id is the descriptor of the semaphore
 int semsignal(int id)
-{
-    printf("---SEMSIGNAL!\n");
-    printf("---SEMSIGNAL!\n");
-    printf("---SEMSIGNAL!\n");
-    printf("---SEMSIGNAL!\n");
-    
+{  
     currentTask = current_task();
 
     if (id < 0 || id >= NSEM_PROC) return -1;
@@ -161,16 +153,9 @@ int semsignal(int id)
     }
 
     struct semaphore *sem = currentTask->current_sems[id];
-
-    printf("SEMSIGNAL! %d\n", sem->id);
-    printf("SEMSIGNAL! %d\n", sem->id);
-    printf("SEMSIGNAL! %d\n", sem->id);
-    printf("SEMSIGNAL! %d\n", sem->id);
-
+    
     acquire(&sem->lock);
     sem->value++; 
-
-    printf("----SEMSIGNAL: task %s signaled on sem (id=%d)\n", currentTask->name, sem->id);
 
     wakeup(&sem->id);
 

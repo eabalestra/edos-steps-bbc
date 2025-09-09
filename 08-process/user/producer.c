@@ -47,10 +47,6 @@ int main(void)
         
         semwait(mutexSem);
         add_to_buffer(value);
-        printf("PASO add_to_buffer\n");
-        printf("PASO add_to_buffer\n");
-        printf("PASO add_to_buffer\n");
-        printf("PASO add_to_buffer\n");
         semsignal(mutexSem);
 
         printf("Producer wrote: %d\n", value);
