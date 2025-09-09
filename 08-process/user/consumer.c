@@ -35,7 +35,8 @@ int main(void)
 
     // Just use the same IDs created by producer
     // (no need to call semcreate again, just semwait/semsignal)
-    while (true)
+
+    for (int i = 0; i < 12; i++)
     {
         semwait(emptySem);
 
@@ -45,7 +46,7 @@ int main(void)
         semsignal(mutexSem);
 
         printf("Consumer read: %d\n", value);
-        
+
         // Signal that buffer is empty again
         semsignal(fullSem);
 

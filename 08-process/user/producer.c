@@ -37,8 +37,7 @@ int main(void)
     // printf("Semaphores created: EMPTY=%d, FULL=%d, MUTEX=%d\n", emptySem, fullSem, mutexSem);
     // printf("Semaphores created: EMPTY=%d, FULL=%d, MUTEX=%d\n", emptySem, fullSem, mutexSem);
 
-
-    while (true)
+    for (int i = 0; i < 12; i++)
     {
         int value = gen_value();
 
@@ -54,7 +53,7 @@ int main(void)
 
         // Small delay
         for (int i = 0; i < 2000000; i++)
-            ;
+            ;   
     }
 
     return 0;

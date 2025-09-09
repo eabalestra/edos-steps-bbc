@@ -164,9 +164,40 @@ int semsignal(int id)
     return 0;
 }
 
+// Releases a semaphore if no processes are using it
+// id is the descriptor of the semaphore
 int semclose(int id)
 {
-    return 0;
+    currentTask = current_task();
+
+    if (id < 0 || id >= NSEM_PROC) return -1;
+
+    if (currentTask->current_sems[id] == NULL) {
+        return -1;  // Process hasn't opened the semaphore yet
+    }
+
+    printf("Closing semaphore with descriptor %d for task %s\n", id, currentTask->name);
+
+    struct semaphore *sem = currentTask->current_sems[id];
+    
+    acquire(&sem_table_lock);
+
+    if (sem && sem->ref_count > 0)
+    {
+        sem->ref_count--;
+        currentTask->current_sems[id] = NULL;
+        if (sem->ref_count == 0)
+        {
+            sem->used = false;
+            sem->id = -1;
+            sem->value = 0;
+        }
+        release(&sem_table_lock);
+        return 0; // Success
+    }
+    
+    release(&sem_table_lock);
+    return -1;
 }
 
 // Opens an existing semaphore with the given ID for the current task.

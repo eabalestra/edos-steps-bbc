@@ -58,7 +58,6 @@ int sys_sleep(struct task *task)
 // Semaphore
 //=============================================================================
 
-// struct semaphore *semcreate(int id, int init_value)
 int sys_semcreate(struct task *task)
 {
     struct trap_frame *tf = task_trap_frame_address(task);
@@ -75,7 +74,6 @@ int sys_semcreate(struct task *task)
     return semcreate(id, init_value);
 }
 
-// sem_wait(int id)
 int sys_semwait(struct task *task)
 {
     struct trap_frame *tf = task_trap_frame_address(task);
@@ -92,7 +90,6 @@ int sys_semopen(struct task *task)
     return semopen(id);
 }
 
-
 int sys_semsignal(struct task *task)
 {
     struct trap_frame *tf = task_trap_frame_address(task);
@@ -101,23 +98,12 @@ int sys_semsignal(struct task *task)
     return semsignal(id);
 }
 
-// sem_close(int id)
 int sys_semclose(struct task *task)
 {
     struct trap_frame *tf = task_trap_frame_address(task);
     int id = (int)syscall_arg(tf, 0);
 
-    // // Check if process has access to this semaphore
-    // if (!proc_has_semaphore(task, id))
-    // {
-    //     return -1;
-    // }
-
-    // // Remove from process table
-    // remove_proc_semaphore(task, id);
-
-    semclose(id);
-    return 0;
+    return semclose(id);
 }
 
 int sys_semget(struct task *task)
@@ -147,8 +133,7 @@ static syscall_f syscalls_table[SYSCALLS] = {
     sys_semwait,
     sys_semsignal,
     sys_semclose,
-    sys_semopen
-};
+    sys_semopen};
 
 // Syscall dispatcher. Call the syscall and store result in trap frame
 void syscall(struct task *task)

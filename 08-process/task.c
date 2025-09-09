@@ -262,12 +262,15 @@ void terminate(void)
 
     t->state = ZOMBIE;
 
-    // TODO: sem close??
-    // DUDA! usar la system call o no?
-    // semclose(t->tid);
-
-    sys_semclose(t);
-
+    // close all the semaphores for this process
+    for (int i = 0; i < NSEM_PROC; i++) 
+    {
+        if (t->current_sems[i] != NULL)
+        {
+            semclose(i);
+        }
+    }
+    
     // to do: close files
 
     // give any children to init
