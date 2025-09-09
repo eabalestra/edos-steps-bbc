@@ -11,7 +11,8 @@ static int value_counter = 0;
 
 int gen_value(void)
 {
-    return value_counter++;
+    value_counter++;
+    return value_counter;
 }
 
 void add_to_buffer(int value)
@@ -22,38 +23,25 @@ void add_to_buffer(int value)
 
 int main(void)
 {
-    printf("Producer process started with PID %d\n", getpid());
+    int N = 20;
+    printf("Producer process started with PID %d\n", getpid());    
 
     // Create semaphores
-
     int emptySem = semcreate(EMPTY, 0); // empty semaphore: counts how many slots are available for producer to write (only one slot available in total).
-    int fullSem = semcreate(FULL, 1);   // full semaphore: counts how many slots are filled for consumer to read.
+    int fullSem = semcreate(FULL, N);   // full semaphore: counts how many slots are filled for consumer to read.
     int mutexSem = semcreate(MUTEX, 1); // mutex semaphore: ensures mutual exclusion when accessing the shared buffer.
-
-    // printf("Semaphores created: EMPTY=%d, FULL=%d, MUTEX=%d\n", emptySem, fullSem, mutexSem);
-    // printf("Semaphores created: EMPTY=%d, FULL=%d, MUTEX=%d\n", emptySem, fullSem, mutexSem);
-    // printf("Semaphores created: EMPTY=%d, FULL=%d, MUTEX=%d\n", emptySem, fullSem, mutexSem);
-    // printf("Semaphores created: EMPTY=%d, FULL=%d, MUTEX=%d\n", emptySem, fullSem, mutexSem);
-    // printf("Semaphores created: EMPTY=%d, FULL=%d, MUTEX=%d\n", emptySem, fullSem, mutexSem);
-    // printf("Semaphores created: EMPTY=%d, FULL=%d, MUTEX=%d\n", emptySem, fullSem, mutexSem);
-
-    for (int i = 0; i < 12; i++)
+    
+    for (int i = 0; i < N; i++)
     {
-        int value = gen_value();
-
-        // Enter critical section
         semwait(fullSem);
         
         semwait(mutexSem);
+        int value = gen_value();
         add_to_buffer(value);
+        printf("Producer wrote: %d.\n", value);
         semsignal(mutexSem);
 
-        printf("Producer wrote: %d\n", value);
         semsignal(emptySem);
-
-        // Small delay
-        for (int i = 0; i < 2000000; i++)
-            ;   
     }
 
     return 0;
